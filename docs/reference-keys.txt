@@ -1,0 +1,4 @@
+spatial-properties
+spatial-autocorrelation
+point-pattern-analysis
+geodemographics
