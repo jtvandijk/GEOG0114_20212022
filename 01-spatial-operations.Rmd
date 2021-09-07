@@ -1,0 +1,169 @@
+# Spatial operations 
+
+## This week
+Understanding spatial properties, relationships and how they are used within spatial operations are the building blocks to spatial data processing and analysis. This tutorial takes you through a simple approach to measuring greenspace access for schools in London, using geometric operations as the main methods for processing and analysing your data. You will construct a buffer dataset around our greenspace and determine whether nearby schools intersect with this buffer. We will first visualise our data as points to see if we can identify areas of high versus low access - and then aggregate the data to the ward level for potential further use within analysis with statistical data, such as census information.
+
+## Case study
+Recent research ([Bijnens *et al.* 2020](https://doi.org/10.1371/journal.pmed.1003213)) has shown that children brought up in proximity to greenspace have a higher IQ and fewer behavioral problems, irrespective of socio-economic background. In our analysis today, we will look to understand whether there are geographical patterns to schools that have high versus low access of greenspace and where a lack of greenspace needs to be addressed in London. Below, we can see where schools are located in London and get a general understanding of their proximity to large greenspace just through a simple navigation of the map. Our following practical allows us to quantify these visual patterns we may observe.
+
+```{r school_map, echo=FALSE}
+# libraries
+suppressMessages(library(sf))
+suppressMessages(library(tmap))
+
+# read school data
+Schools <- st_read('data/schools/school_data_london_2016.shp',stringsAsFactors=FALSE,quiet=TRUE)
+
+# inspect
+suppressMessages(tmap_mode('view'))
+tm_shape(Schools) +
+  tm_dots() +
+  tm_basemap(server='OpenStreetMap')
+suppressMessages(tmap_mode('plot'))
+```
+
+## Getting started
+To enable the efficient, repeatable and reproducible functionality of our work, we will use R-Studio's ability to create and host code as a script. Before we do anything therefore, we will need to create a new R script: **File** > **New File** > **R Script**
+
+Let's go ahead and save our script now, so we know it's stored in our system - and in the future, we only need to remind ourselves to complete a quick save (e.g. `cmd` / `ctrl` + `s`).
+
+Now we have our script created, we can create a new data folder within the same directory as where we saved our script then copy over our data into this folder. Call this folder **data**. Next, if you haven’t already, download this week’s practical data zipfile. Once downloaded, we want to move this zipfile from your *Downloads* and into this newly created data folder. You can do this either in your computer OS’s normal file management tool, e.g. finder in Mac OS, or you can do this using R-Studio within the *Files* pane. Lastly, we want to unzip the file to gain access to the data within our R environment.
+
+#### File download {-}
+| File                                                 | Type           | Link |
+| :------                                              | :------        | :------ |
+| London school and greenspace data                    |`shp`     | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/school_analysis.zip) |
+
+## Libraries
+The **first two tasks** you will do **everytime** you create a new script is to first, point your computer to your working directory (so it knows where all your data is) and second, (pre-emptively) load many of the libraries you think you'll be using in your analysis. Luckily, we can now use the latter to also do the former - saving us a little bit of time in our set-up and a lot of time in our script-writing later on - by using the `here` library. Install this library if you have not already done so!
+
+```{r here-here-here, echo=TRUE}
+# libraries
+library(here)
+```
+
+But this library alone will not be enough for our analysis today! At the moment, we know that we'll need to load some spatial data - therefore we need to load a library capable of handling our datsets. For this module, and preferably within your R programming moving forward, we will focus on using the `sf` or *Simple Features* library that allows us to load, manipulate, process and export spatial data. 
+
+<div class="note">
+**Note**<br/>
+Prior to the `sf` library, which was introduced to R-Studio in 2017, the `sp` library was the main spatial library used in R-Studio. As a result, you may see older code or scripts using the `sp` to handle spatial data. `sf` has replaced `sp` as the default spatial library as it works better with the `tidyverse` way of doing things. Ultimately, you can convert between the two library formats (and some other libraries we will use later on in the term still only work with `sp`) - but it is best practice to try to use the `sf` library in your code moving forward.
+</div>
+
+In addition to the `sf` library, we want to add in the `tidyverse` library that will allow us to use the pipe function (`%>%`), amongst other things, within our work and enable more efficient programming. We are likely going to need some additional libraries to help further manipulate or visualise our datasets as we move forward with our processing - we'll add these in now, but explain them in a little more detail as we get to use them in our code. These libraries include: `units` and `tmap`.
+
+As a result, the top of our script should look something like:
+
+```{r load-them-in, echo=TRUE, comment=FALSE, warning=FALSE}
+# libraries
+library(here)
+library(tidyverse)
+library(sf)
+library(tmap)
+library(units)
+```
+
+## Loading our datasets
+For this analysis we have three different datasets available: schools in London, greenspace in London (split into two separate datasets), and wards (an administrative geography) in London. All three of our datasets are provided as shapefiles which will make working with the data relatively straight-forward (e.g. even for our point data, the schools, we do not need to convert them from  a `csv` as we often find with this type of data). **But** we'll need to do quite a few steps of processing to get our final dataset.
+
+Let's go ahead and load our three variables - we will use the `sf` library `st_read()` command to load our datasets into variables for use within our code:
+
+```{r load-those-shapes, echo=TRUE}
+# load london schools
+london_schools <- st_read(here::here('data/schools', 'school_data_london_2016.shp'))
+
+# load london wards
+london_wards <- st_read(here::here('data/administrative_boundaries', 'london_wards.shp'))
+
+# load london greenspace
+TL_greenspace <- st_read(here::here('data/greenspace', 'TL_GreenspaceSite.shp'))
+TQ_greenspace <- st_read(here::here('data/greenspace', 'TQ_GreenspaceSite.shp'))
+```
+
+To see what each variable looks like, you can type in `plot(name_of_variable)` into the R console. This is a quick command to understand both the spatial coverage and attributes of your data - as it will display the data by each of its attribute fields as a plot.
+
+## Data Processing
+Now we have our data loaded as variables, we're ready to start processing! In spatial data processing, the question always is: where do I start first? And the easiest answer to that is: **make sure all of your data is in the same Projected (or Coordinate) Reference System as each other**. Checking - and changing projections - should always be the first step of any workflow as this will ensure you do not carry through any potential mistakes or errors that using the wrong system can cause.
+
+### Reprojecting
+When you loaded your datasets in the above step, you may have notice that in the console additional information about the dataset is printed - this includes the metadata on the dataset's Coordinate Referene System! As a result, it is quite easy to simply scroll the terminal to check the CRS for each dataset - which as you'll see, all the datasets bar the school are using 27700, whih is the code for British National Grid, whereas our schools dataset shows 3857, the code for WGS84. That means we need to start with our *london_schools* variable - as we know that this is the only dataset currently in the wrong projection (WGS84) instead of using British National Grid. 
+
+To reproject our dataset, we can use a function within the `sf` library, known as `st_transform()`. It is very simple to use - you only need to provide the function with the dataset and the code for the new CRS you wish to use with the data. For now, we will simply store the result of this transformation as a new variable - but you could in the future, rewrite this code to use pipes to pipe this transformation when loading the dataset.
+
+```{r reproject}
+# reproject london schools form WGS84 to BNG 
+london_schools_prj <- st_transform(london_schools, 27700)
+```
+
+We can now double-check our new variable is in the correct CRS by typing the following into the console and checking the result:
+
+``` {r proj_check}
+# check CRS 
+st_crs(london_schools_prj)
+```
+
+As you can see from the output above, our dataset has been reprojected into EPSG 27700 or British National Grid!
+
+The next step to process our `london_schools_prj` dataset is to reduce the schools to only our chosen London extent. As you can see from the map above, our schools cover an area larger than our usual London extent. We can even make a quick map of this to check this properly:
+
+```{r where-those-schools-at}
+# inspect
+tm_shape(london_wards) + 
+  tm_polygons() + 
+tm_shape(london_schools_prj) + 
+  tm_dots()
+```
+
+As we can see, we indeed  have schools outside of our London wards - as a result, we want to remove those schools outside of this boundary. We will do this by first dissolving our ward file to create a more simplified shapefile for use as a "cookie-cutter".
+
+### Dissolving
+To dissolve a polygon shapefile using R code, we will use the `summarise()` function that comes from the `dplyr` library (part of the `tidyverse`) and summarise our London Wards dataset by summing its total area (supplied in the *HECTARES* attribute field/column) across all records. This will reduce our data frame to a single row, which will only contain one attribute - our total area of London, which we can then map/use as our clip (cookie-cutter) feature! 
+
+```{r dissolve-them-wards}
+# dissolve
+london_outline <- london_wards %>% summarise(area = sum(HECTARES))
+
+# inspect
+tm_shape(london_outline) +
+  tm_polygons()
+```
+### Subsetting
+Now we have out London outline, we can go ahead and clip our schools dataset by our London outline. Whilst there is a clip function within the `sf` library, what we will do here is use a techinque known as spatial subsetting, which is more similar to *selecting by location*: we will subset our london schools dataset by filtering out those that are not within the London Outline. This approach in R is much quicker than using the clip function - although deciding which approach to use is not only a question of speed but also how each function will affect the filtered data. When using a clip function, the function acts exactly like a cookie-cutter and will trim off any data that overlaps with the boundaries used. Conversely, when using a subsetting approach, if a data point or polygon overlaps on the boundary, it will still be included (depending on the *topological relationship* used) but in its entirety (i.e. no trimming!). 
+
+As we're using point data, it is generally easier to use a **subset approach**. There are multiple ways to conduct spatial subsetting within R: 
+
+First, we can either use `[]` just like you would use for selecting and slicing a normal (table-based) dataframe from R's base package - or we can use the `filter()` function from `dplyr` within the `tidyverse`. Second, `sf` has its own library of subsetting through geometric operations, including: intersection, difference, symmetrical difference and snap.
+
+To keep things simple, we will use the base subsetting approach - which also works similarly when programming in Python, for instance.
+
+```{r sub-set}
+# suubset London schools
+london_schools_prj_ss <- london_schools_prj[london_outline,]
+```
+
+<div class="note">
+**Note**<br/>
+In a case like above, you can just overwrite the current *london_schools_prj* variable as you know it is the dataset you want to use. Much of this code could be condensed into several lines using pipes to make our code shorter and more efficient - but then it would be harder to explain! As you progress with R and programming, you are welcome to bring pipes and restructuring into own your code - but even if you don't, as long as your code does what you need it to do, then that's our main aim with this course!
+</div>
+
+Once you have run the above code, you should notice that your *london_schools_prj_ss* variable now only contains 3372 records, instead of the original 3889. We can also plot our variable using the same code as above, to double-check that it worked:
+
+```{r inspect-that-sub-set}
+# inspect
+tm_shape(london_wards) + 
+  tm_polygons() + 
+tm_shape(london_schools_prj_ss) + 
+  tm_dots()
+```
+
+We should now see that our schools are all contained within our ward dataset, so we know this dataset is ready to be used for analysis. We will now explore which schools are within 400m of greenspace and which are not. But first, we now need to get our greenspace data ready so we can create the 400m buffers needed for this analysis.
+
+### Unioning
+
+
+## Attributions {#attributions_w03}
+This week's content and practical uses content and inspiration from:
+
+- Wilkin, Jo. 2020. Analysing school access to greenspace in London. https://github.com/jo-wilkin/R-GIS-Tutorials/blob/master/greenspace_access.Rmd
+
+
+

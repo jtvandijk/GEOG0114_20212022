@@ -1,4 +1,14 @@
-spatial-properties
+spatial-operations
+this-week
+case-study
+getting-started
+libraries
+loading-our-datasets
+data-processing
+reprojecting
+dissolving
+unioning
+attributions_w03
 spatial-autocorrelation
 point-pattern-analysis
 geodemographics
