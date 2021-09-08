@@ -6,7 +6,7 @@ Understanding spatial properties, relationships and how they are used within spa
 ## Case study {#case_study_w03}
 Recent research ([Bijnens *et al.* 2020](https://doi.org/10.1371/journal.pmed.1003213)) has shown that children brought up in proximity to greenspace have a higher IQ and fewer behavioral problems, irrespective of socio-economic background. In our analysis today, we will look to understand whether there are geographical patterns to schools that have high versus low access of greenspace and where a lack of greenspace needs to be addressed in London. Below, we can see where schools are located in London and get a general understanding of their proximity to large greenspace just through a simple navigation of the map. In this practical we will try to quantify these visual patterns we may observe and find out which schools are within **400 metres** of greenspace that is larger than 50,000 square meters. We then calculate for each ward the percentage of schools that have access to a large greenspace.
 
-```{r school_map, echo=FALSE, cache=TRUE}
+```{r school_map, echo=FALSE, cache=FALSE}
 # libraries
 suppressMessages(library(sf))
 suppressMessages(library(tmap))
@@ -76,7 +76,7 @@ For this analysis we have three different datasets available: schools in London,
 
 Let's go ahead and load our three variables - we will use the `sf` library `st_read()` command to load our datasets into variables for use within our code:
 
-```{r load-those-shapes, echo=TRUE, cache=TRUE}
+```{r load-those-shapes, echo=TRUE, cache=FALSE}
 # load london schools
 london_schools <- st_read(here::here('data/schools', 'school_data_london_2016.shp'))
 
@@ -98,7 +98,7 @@ When you loaded your datasets in the above step, you may have notice that in the
 
 To reproject our dataset, we can use a function within the `sf` library, known as `st_transform()`. It is very simple to use - you only need to provide the function with the dataset and the code for the new CRS you wish to use with the data. For now, we will simply store the result of this transformation as a new variable - but you could in the future, rewrite this code to use pipes to pipe this transformation when loading the dataset.
 
-```{r reproject, cache=TRUE}
+```{r reproject, cache=FALSE}
 # reproject london schools form WGS84 to BNG 
 london_schools_prj <- st_transform(london_schools, 27700)
 ```
@@ -114,7 +114,7 @@ As you can see from the output above, our dataset has been reprojected into EPSG
 
 The next step to process our `london_schools_prj` dataset is to reduce the schools to only our chosen London extent. As you may have seen from the map above, our schools cover an area larger than our usual London extent. We can even make a quick map of this to check this properly:
 
-```{r where-those-schools-at, cache=TRUE}
+```{r where-those-schools-at, cache=FALSE}
 # inspect
 tm_shape(london_wards) + 
   tm_polygons() + 
@@ -127,7 +127,7 @@ As we can see, we indeed  have schools outside of our London wards - as a result
 ### Dissolving
 To dissolve a polygon shapefile using R code, we will use the `summarise()` function that comes from the `dplyr` library (part of the `tidyverse`) and summarise our London wards dataset by summing its total area (supplied in the *HECTARES* attribute field/column) across all records. This will reduce our data frame to a single row, which will only contain one attribute - our total area of London, which we can then map/use as our clip (cookie-cutter) feature! 
 
-```{r dissolve-them-wards, cache=TRUE}
+```{r dissolve-them-wards, cache=FALSE}
 # dissolve
 london_outline <- london_wards %>% summarise(area = sum(HECTARES))
 
@@ -145,7 +145,7 @@ First, we can either use `[]` just like you would use for selecting and slicing 
 
 To keep things simple, we will use the base subsetting approach - which also works similarly when programming in Python, for instance.
 
-```{r sub-set, cache=TRUE}
+```{r sub-set, cache=FALSE}
 # subset London schools
 london_schools_prj_ss <- london_schools_prj[london_outline,]
 ```
@@ -157,7 +157,7 @@ In a case like above, you can just overwrite the current *london_schools_prj* va
 
 Once you have run the above code, you should notice that your *london_schools_prj_ss* variable now only contains 3,372 records, instead of the original 3,889. We can also plot our variable using the same code as above, to double-check that it worked:
 
-```{r inspect-that-sub-set, cache=TRUE}
+```{r inspect-that-sub-set, cache=FALSE}
 # inspect
 tm_shape(london_wards) + 
   tm_polygons() + 
@@ -182,7 +182,7 @@ The next step is to clip our reduced greenspace data to our London outline. With
 
 What we can do however if reduce the processing required by our computer by using a mixture of these two methods - if we first subset our all_greenspace dataset by our London outline and then run the clip, our processing will be much faster:
 
-```{r clip_greenspace, cache=TRUE}
+```{r clip_greenspace, cache=FALSE}
 # subset and clip
 london_greenspace <- greenspace[london_outline,] %>% st_intersection(london_outline)
 
@@ -198,21 +198,21 @@ Now we have only London greenspaces in our dataset, the next step, is to reduce 
 
 To be able to query on our area, we must first calculate the area of each of our greenspaces. To do so in R, we can use the `st_area()` function within `sf`, which will calculate the area of each of our records/observations in our greenspace dataset. To store the output of this function as a new column in our `london_greenspace` dataset, we use a simple notation at the end of our `london_greenspace` variable: `$area_m`. The `$` in R means for this data frame, access the column that proceeds this sign. In our case, we do not as yet have a column called `area_m`, therefore R will automatically create this column and then store the outputs of the function in this column:
 
-```{r size-up-that-greenspace, cache=TRUE}
+```{r size-up-that-greenspace, cache=FALSE}
 # calculate area
 london_greenspace$area_m <- st_area(london_greenspace)
 ```
 
 Once we have our area column, we can now filter our dataset based on that column and filter out all greenspace with an area that is smaller than 50,000 square meters.
 
-```{r only-real-greenspace-pls, cache=TRUE}
+```{r only-real-greenspace-pls, cache=FALSE}
 # filter large greenspaces
 large_london_greenspace <- london_greenspace %>% filter(area_m > set_units(50000.0, m^2))
 ```
 
 We now can look at our final greenspace dataset against our london outline to see its final coverage:
 
-```{r check-that-final-greenspace, cache=TRUE}
+```{r check-that-final-greenspace, cache=FALSE}
 # inspect
 tm_shape(london_outline) + 
   tm_polygons() + 
@@ -227,14 +227,14 @@ To do this, we would investigate the documentation of the function `st_buffer()`
 
 Fortunately none of this is our concern - we know we can simply input the figure of 400 into our buffer and this will generate a buffer of 400m. 
 
-```{r buffer-buffer, cache=TRUE}
+```{r buffer-buffer, cache=FALSE}
 # greenspace buffer
 gs_buffer_400m <- st_buffer(large_london_greenspace, dist=400)
 ```
 
 As our final bit of processing with our greenspace buffer, we want to dissolve the whole buffer into a single record. To do this, we'll replicate the code used for our London ward dissolve, creating a an area value for our buffer records in the process to be used within the summarisation - and then result in a new gs_buffer_400m_single variable:
 
-```{r dissolve-that-buffer, cache=TRUE}
+```{r dissolve-that-buffer, cache=FALSE}
 # dissolve greenspace buffer
 gs_buffer_400m_single <- gs_buffer_400m %>% summarise(area = sum(st_area(gs_buffer_400m)))
 
@@ -250,7 +250,7 @@ Great, we are now ready to bring our two datasets together reaady for anlaysis -
 
 Our first task is to identify those schools that have access to greenspace - and extract them to create a new variable for use within our final point-in-polygon count (i.e. how many schools within each ward has access to greenspace). As we know, we can subset our london_schools dataset by our greenspace buffer quite easily using the subset approach:
 
-```{r schools-with-that-green, cache=TRUE}
+```{r schools-with-that-green, cache=FALSE}
 # schools within 400m of greenspace
 london_schools_gs <- london_schools_prj_ss[gs_buffer_400m_single,]
 ```
@@ -259,14 +259,14 @@ Our *london_schools_gs* variable has been subsetted correctly if we end up with 
 
 The `st_intersects()` function is really useful as its output is a simple `TRUE` or `FALSE` statement - does this record intersect with the greenspace buffer? This result is what will be stored in our new column as a TRUE or FALSE response and what we can use to map our schools and their greenspace access:
 
-```{r boolean-greenspace-schools, cache=TRUE}
+```{r boolean-greenspace-schools, cache=FALSE}
 # greenspace access
 london_schools_prj_ss$gs_access <- st_intersects(london_schools_prj_ss, gs_buffer_400m_single, sparse=FALSE)
 ```
 
 We could go ahead and recode this to create a 1 or 0, or YES or NO after processing, but for now we'll leave it as `TRUE` or `FALSE`. We can go head and now visualise our schools based on this column, to see if they have access (`TRUE`) or do not have access (`FALSE`) to greenspace. To do this, we'll use the `tmap` library again:
 
-```{r show-that-space, cache=TRUE}
+```{r show-that-space, cache=FALSE}
 # inspect
 tm_shape(london_schools_prj_ss) + 
   tm_dots(col='gs_access', palette='BuGn')
@@ -278,7 +278,7 @@ To do so in R and with `sf`, it is one line of code - which at first look does n
 
 This is a really simple way of doing a PIP calculation - and makes it easy for us to store the output of the function and its `lengths` (and thus the count) directly as a column within our `london_wards` dataset, as so:
 
-```{r point-in-polygon-schools, cache=TRUE}
+```{r point-in-polygon-schools, cache=FALSE}
 # total number of schools in each ward 
 london_wards$total_schools <- lengths(st_intersects(london_wards, london_schools_prj_ss))
 
@@ -295,7 +295,7 @@ london_wards$gs_rate <- (london_wards$gs_schools/london_wards$total_schools)*100
 
 And that's it! We now have our greenspace rate for our wards, which we can now again map:
 
-```{r plot-the-final-result-yall, cache=TRUE}
+```{r plot-the-final-result-yall, cache=FALSE}
 # inspect
 tm_shape(london_wards) + 
   tm_polygons(col='gs_rate', palette='Greens')
