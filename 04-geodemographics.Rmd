@@ -38,7 +38,7 @@ It is always a good idea to inspect your data prior to analysis to find out how 
 knitr::include_graphics('images/week09/09_iuc_excel.png')
 ```
 
-```{r 09-load-libraries-and data, warnings=FALSE, message=FALSE, cache=TRUE}
+```{r 09-load-libraries-and data, warnings=FALSE, message=FALSE, cache=FALSE}
 # load libraries
 library(tidyverse)
 library(tmap)
@@ -144,7 +144,7 @@ The dataset contains the following variables:
 | MSOA-level input variables for IUC                   | `csv`        | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/msoa_iuc_input.zip) |
 | Middle-layer Super Output Areas Great Britain 2011   | `shp`        | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/gb_msoa11_sim.zip) |
 
-```{r 09-load-date-for-those-mean-ks, warnings=FALSE, message=FALSE, cache=TRUE}
+```{r 09-load-date-for-those-mean-ks, warnings=FALSE, message=FALSE, cache=FALSE}
 # load data
 iuc_input <- read_csv('data/index/msoa_iuc_input.csv')
 
@@ -154,7 +154,7 @@ head(iuc_input)
 
 Before running our **k-means** clustering algorithm, we need to extract the data which we want to use; i.e. we need to remove all the columns with data that we do not want to include in the clustering process.
 
-```{r 09-select-the-columns, warnings=FALSE, message=FALSE, cache=TRUE}
+```{r 09-select-the-columns, warnings=FALSE, message=FALSE, cache=FALSE}
 # column names
 names(iuc_input)
 
@@ -167,7 +167,7 @@ head(cluster_data)
 
 We also need to rescale the data so all input data are presented on a comparable scale: the average download speed data (i.e. `avg_dwn_speed`) is very different to the other data that, for instance, represent the percentage of the population by different age groups.
 
-```{r 09-rescale-those-values, warnings=FALSE, message=FALSE, cache=TRUE}
+```{r 09-rescale-those-values, warnings=FALSE, message=FALSE, cache=FALSE}
 # rescale
 cluster_data <- scale(cluster_data) 
 
@@ -182,7 +182,7 @@ Now our data are all on the same scale, we will start by creating an elbow plot.
 
 The elbow method can help as it plots the total explained variation ('Within Sum of Squares') in your data as a function of the number of cluster. The idea is that you pick the number of clusters at the 'elbow' of the curve as this is the point in which the additional variation that would be explained by an additional cluster is decreasing. Effectively this means you are actually running the **k-means** clustering multiple times before running the actual **k-means** clustering algorithm.
 
-```{r 09-settings-and-options, warnings=FALSE, message=FALSE, echo=FALSE, cache=TRUE}
+```{r 09-settings-and-options, warnings=FALSE, message=FALSE, echo=FALSE, cache=FALSE}
 # settings
 options(max.print = 15)
 ```
@@ -226,7 +226,7 @@ The interpretation of an elbow plot can be quite subjective and often multiple o
 
 Now we have decided on the number of clusters (i.e. **7** clusters), we can now run our cluster analysis. We will be running this analysis 10 times because there is an element of randomness within the clustering, and we want to make sure we get the best clustering output.
 
-```{r 09-run-that-cluster, warnings=FALSE, message=FALSE, cache=TRUE}
+```{r 09-run-that-cluster, warnings=FALSE, message=FALSE, cache=FALSE}
 # create empty list to store the results of the clustering
 clusters <- list()
 
@@ -264,7 +264,7 @@ fit
 
 We now have to execute a bit of post-processing to extract some useful summary data for each cluster: the cluster size (`size`) and mean values for each cluster.
 
-```{r 09-post-process-some-cluster-stuff, warnings=FALSE, message=FALSE, cache=TRUE}
+```{r 09-post-process-some-cluster-stuff, warnings=FALSE, message=FALSE, cache=FALSE}
 # assign to new variable for clarity
 kfit <- clusters
 
