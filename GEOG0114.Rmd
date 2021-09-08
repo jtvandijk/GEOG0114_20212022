@@ -27,6 +27,996 @@ Welcome to **Principles of Spatial Analysis**, one of the four core modules for 
 
 <!--chapter:end:index.Rmd-->
 
+# Spatial operations 
+
+## This week {#this_week_w03}
+Understanding spatial properties, relationships and how they are used within spatial operations are the building blocks to spatial data processing and analysis. This tutorial takes you through a simple approach to measuring greenspace access for schools in London, using geometric operations as the main methods for processing and analysing your data. You will construct a buffer dataset around our greenspace and determine whether nearby schools intersect with this buffer. We will first visualise our data as points to see if we can identify areas of high versus low access - and then aggregate the data to the ward level for potential further use within analysis with statistical data, such as census information.
+
+## Case study {#case_study_w03}
+Recent research ([Bijnens *et al.* 2020](https://doi.org/10.1371/journal.pmed.1003213)) has shown that children brought up in proximity to greenspace have a higher IQ and fewer behavioral problems, irrespective of socio-economic background. In our analysis today, we will look to understand whether there are geographical patterns to schools that have high versus low access of greenspace and where a lack of greenspace needs to be addressed in London. Below, we can see where schools are located in London and get a general understanding of their proximity to large greenspace just through a simple navigation of the map. In this practical we will try to quantify these visual patterns we may observe and find out which schools are within **400 metres** of greenspace that is larger than 50,000 square meters. We then calculate for each ward the percentage of schools that have access to a large greenspace.
+
+```{r school_map, echo=FALSE, cache=TRUE}
+# libraries
+suppressMessages(library(sf))
+suppressMessages(library(tmap))
+
+# read school data
+schools <- st_read('data/schools/school_data_london_2016.shp',stringsAsFactors=FALSE,quiet=TRUE)
+
+# inspect
+suppressMessages(tmap_mode('view'))
+tm_shape(schools) +
+  tm_dots() +
+  tm_basemap(server='OpenStreetMap')
+suppressMessages(tmap_mode('plot'))
+```
+
+## Getting started {#getting_started_w03}
+To enable the efficient, repeatable and reproducible functionality of our work, we will use R-Studio's ability to create and host code as a script. Before we do anything therefore, we will need to create a new R script: **File** > **New File** > **R Script**
+
+Let's go ahead and save our script now, so we know it's stored in our system - and in the future, we only need to remind ourselves to complete a quick save (e.g. `cmd` / `ctrl` + `s`).
+
+Now we have our script created, we can create a new data folder within the same directory as where we saved our script then copy over our data into this folder. Call this folder **data**. Next, if you haven’t already, download this week’s practical data zipfile. Once downloaded, we want to move this zipfile from your *Downloads* and into this newly created data folder. You can do this either in your computer OS’s normal file management tool, e.g. finder in Mac OS, or you can do this using R-Studio within the *Files* pane. Lastly, we want to unzip the file to gain access to the data within our R environment.
+
+#### File download {-}
+| File                                                 | Type           | Link |
+| :------                                              | :------        | :------ |
+| London school and greenspace data                    |`shp`     | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/school_analysis.zip) |
+
+## Libraries
+The **first two tasks** you will do **everytime** you create a new script is to first, point your computer to your working directory (so it knows where all your data is) and second, (pre-emptively) load many of the libraries you think you'll be using in your analysis. Luckily, we can now use the latter to also do the former - saving us a little bit of time in our set-up and a lot of time in our script-writing later on - by using the `here` library. Install this library if you have not already done so!
+
+```{r here-here-here, echo=TRUE}
+# libraries
+library(here)
+```
+
+But this library alone will not be enough for our analysis today! At the moment, we know that we'll need to load some spatial data - therefore we need to load a library capable of handling our datasets. For this module, and preferably within your R programming moving forward, we will focus on using the `sf` or *Simple Features* library that allows us to load, manipulate, process and export spatial data. 
+
+<div class="note">
+**Note**<br/>
+Prior to the `sf` library, which was introduced to R-Studio in 2017, the `sp` library was the main spatial library used in R-Studio. As a result, you may see older code or scripts using the `sp` to handle spatial data. `sf` has replaced `sp` as the default spatial library as it works better with the `tidyverse` way of doing things. Ultimately, you can convert between the two library formats (and some other libraries we will use later on in the term still only work with `sp`) - but it is best practice to try to use the `sf` library in your code moving forward.
+</div>
+
+In addition to the `sf` library, we want to add in the `tidyverse` library that will allow us to use the pipe function (`%>%`), amongst other things, within our work and enable more efficient programming. We are likely going to need some additional libraries to help further manipulate or visualise our datasets as we move forward with our processing - we'll add these in now, but explain them in a little more detail as we get to use them in our code. These libraries include: `units` and `tmap`.
+
+As a result, the top of our script should look something like:
+
+```{r load-them-in, echo=TRUE, comment=FALSE, warning=FALSE, eval=FALSE}
+# libraries
+library(here)
+library(tidyverse)
+library(sf)
+library(tmap)
+library(units)
+```
+
+```{r load-them-in-for-realz, echo=FALSE, comment=FALSE, warning=FALSE}
+# libraries
+suppressMessages(library(here))
+suppressMessages(library(tidyverse))
+suppressMessages(library(sf))
+suppressMessages(library(tmap))
+suppressMessages(library(units))
+```
+
+## Loading our datasets {#loading_data_w03}
+For this analysis we have three different datasets available: schools in London, greenspace in London (split into two separate datasets), and wards (an administrative geography) in London. All three of our datasets are provided as shapefiles which will make working with the data relatively straight-forward (e.g. even for our point data, the schools, we do not need to convert them from  a `csv` as we often find with this type of data). **But** we'll need to do quite a few steps of processing to get our final dataset.
+
+Let's go ahead and load our three variables - we will use the `sf` library `st_read()` command to load our datasets into variables for use within our code:
+
+```{r load-those-shapes, echo=TRUE, cache=TRUE}
+# load london schools
+london_schools <- st_read(here::here('data/schools', 'school_data_london_2016.shp'))
+
+# load london wards
+london_wards <- st_read(here::here('data/administrative_boundaries', 'london_wards.shp'))
+
+# load london greenspace
+TL_greenspace <- st_read(here::here('data/greenspace', 'TL_GreenspaceSite.shp'))
+TQ_greenspace <- st_read(here::here('data/greenspace', 'TQ_GreenspaceSite.shp'))
+```
+
+To see what each variable looks like, you can type in `plot(name_of_variable)` into the R console. This is a quick command to understand both the spatial coverage and attributes of your data - as it will display the data by each of its attribute fields as a plot.
+
+## Data Processing 
+Now we have our data loaded as variables, we're ready to start processing! In spatial data processing, the question always is: where do I start first? And the easiest answer to that is: **make sure all of your data is in the same Projected (or Coordinate) Reference System as each other**. Checking - and changing projections - should always be the first step of any workflow as this will ensure you do not carry through any potential mistakes or errors that using the wrong system can cause.
+
+### Reprojecting
+When you loaded your datasets in the above step, you may have notice that in the console additional information about the dataset is printed - this includes the metadata on the dataset's Coordinate Referene System! As a result, it is quite easy to simply scroll the terminal to check the CRS for each dataset - which as you'll see, all the datasets bar the school are using EPSG 27700, whih is the code for British National Grid, whereas our schools dataset shows 3857, the code for WGS84. That means we need to start with our *london_schools* variable - as we know that this is the only dataset currently in the wrong projection (WGS84) instead of using British National Grid. 
+
+To reproject our dataset, we can use a function within the `sf` library, known as `st_transform()`. It is very simple to use - you only need to provide the function with the dataset and the code for the new CRS you wish to use with the data. For now, we will simply store the result of this transformation as a new variable - but you could in the future, rewrite this code to use pipes to pipe this transformation when loading the dataset.
+
+```{r reproject, cache=TRUE}
+# reproject london schools form WGS84 to BNG 
+london_schools_prj <- st_transform(london_schools, 27700)
+```
+
+We can now double-check our new variable is in the correct CRS by typing the following into the console and checking the result:
+
+``` {r proj_check}
+# check CRS 
+st_crs(london_schools_prj)
+```
+
+As you can see from the output above, our dataset has been reprojected into EPSG 27700 or British National Grid!
+
+The next step to process our `london_schools_prj` dataset is to reduce the schools to only our chosen London extent. As you may have seen from the map above, our schools cover an area larger than our usual London extent. We can even make a quick map of this to check this properly:
+
+```{r where-those-schools-at, cache=TRUE}
+# inspect
+tm_shape(london_wards) + 
+  tm_polygons() + 
+tm_shape(london_schools_prj) + 
+  tm_dots()
+```
+
+As we can see, we indeed  have schools outside of our London wards - as a result, we want to remove those schools outside of this boundary. We will do this by first dissolving our ward file to create a more simplified shapefile for use as a "cookie-cutter".
+
+### Dissolving
+To dissolve a polygon shapefile using R code, we will use the `summarise()` function that comes from the `dplyr` library (part of the `tidyverse`) and summarise our London wards dataset by summing its total area (supplied in the *HECTARES* attribute field/column) across all records. This will reduce our data frame to a single row, which will only contain one attribute - our total area of London, which we can then map/use as our clip (cookie-cutter) feature! 
+
+```{r dissolve-them-wards, cache=TRUE}
+# dissolve
+london_outline <- london_wards %>% summarise(area = sum(HECTARES))
+
+# inspect
+tm_shape(london_outline) +
+  tm_polygons()
+```
+
+### Subsetting
+Now we have our London outline, we can go ahead and clip our schools dataset by our London outline. Whilst there is a clip function within the `sf` library, what we will do here is use a techinque known as spatial subsetting, which is more similar to *selecting by location*: we will subset our london schools dataset by filtering out those that are not within the London Outline. This approach in R is much quicker than using the clip function - although deciding which approach to use is not only a question of speed but also how each function will affect the filtered data. When using a clip function, the function acts exactly like a cookie-cutter and will trim off any data that overlaps with the boundaries used. Conversely, when using a subsetting approach, if a data point or polygon overlaps on the boundary, it will still be included (depending on the *topological relationship* used) but in its entirety (i.e. no trimming!). 
+
+As we're using point data, it is generally easier to use a **subset approach**. There are multiple ways to conduct spatial subsetting within R: 
+
+First, we can either use `[]` just like you would use for selecting and slicing a normal (table-based) dataframe from R's base package - or we can use the `filter()` function from `dplyr` within the `tidyverse`. Second, `sf` has its own library of subsetting through geometric operations, including: intersection, difference, symmetrical difference and snap.
+
+To keep things simple, we will use the base subsetting approach - which also works similarly when programming in Python, for instance.
+
+```{r sub-set, cache=TRUE}
+# subset London schools
+london_schools_prj_ss <- london_schools_prj[london_outline,]
+```
+
+<div class="note">
+**Note**<br/>
+In a case like above, you can just overwrite the current *london_schools_prj* variable as you know it is the dataset you want to use. Much of this code could be condensed into several lines using pipes to make our code shorter and more efficient - but then it would be harder to explain! As you progress with R and programming, you are welcome to bring pipes and restructuring into own your code - but even if you don't, as long as your code does what you need it to do, then that's our main aim with this course!
+</div>
+
+Once you have run the above code, you should notice that your *london_schools_prj_ss* variable now only contains 3,372 records, instead of the original 3,889. We can also plot our variable using the same code as above, to double-check that it worked:
+
+```{r inspect-that-sub-set, cache=TRUE}
+# inspect
+tm_shape(london_wards) + 
+  tm_polygons() + 
+tm_shape(london_schools_prj_ss) + 
+  tm_dots()
+```
+
+We should now see that our schools are all contained within our ward dataset, so we know this dataset is ready to be used for analysis. We will now explore which schools are within  400m of greenspace and which are not. But first, we need to get our greenspace data ready so we can create the 400m buffers needed for this analysis.
+
+### Unioning
+We've done a lot of processing so far to do with our schools and ward data, but now it's time for the greenspace datasets. If you look back at your code, you should remember that we have two datasets for our greenspace in London, which we now need to join together. This type of join is typically known as a **union** - and this is the type of tool you would want to look for across any GUI system. 
+
+When it comes to programming, however, in either R or python, there is a much simpler way of joining datasets - and that's simply copying over the records or observations from one variable into another - and the `base` library has a ready-to-go function for us to use, known as `rbind()`. This function allows you to 'bind' rows from one or more datasets together. This also works for `sf` objects.
+
+```{r a-green-union}
+# join greenspace datasets together
+greenspace = rbind(TQ_greenspace, TL_greenspace)
+```
+
+### Clipping
+The next step is to clip our reduced greenspace data to our London outline. Within `sf`, the clip function is known as the `st_intersection()` function - not to be confused with `st_intersects()` from above! A clip will change the geometry of some of our greenspaces on the outskirts of London, i.e. cookie-cut them precisely to the London outline. If we used the subset approach approach as we did earlier with our point data, we would simply extract all greenspaces that intersect with the London outline - but not change their geometry.
+
+What we can do however if reduce the processing required by our computer by using a mixture of these two methods - if we first subset our all_greenspace dataset by our London outline and then run the clip, our processing will be much faster:
+
+```{r clip_greenspace, cache=TRUE}
+# subset and clip
+london_greenspace <- greenspace[london_outline,] %>% st_intersection(london_outline)
+
+# inspect
+tm_shape(london_outline) + 
+  tm_polygons() + 
+tm_shape(london_greenspace) + 
+  tm_polygons()
+```
+
+### Attribute selection
+Now we have only London greenspaces in our dataset, the next step, is to reduce the number of greenspaces to only those bigger than 50,000 square meters. To do this, we will use another type of subsetting you've probably come across, which is attribute subsetting - by using a simple query to subset only records that have an area larger than 50,000 square metres. To do this, we'll use the `filter()` function from the `dplyr` library we mentioned earlier as well as another function called `set_units()` which is from the `unit` library that you've loaded - but we haven't yet discussed. The `set_units()` function allows us to assign units to numerical values we are using within our query, i.e. here, for our query to run, our value must be in square metres to match the unit of the `area_m` column. 
+
+To be able to query on our area, we must first calculate the area of each of our greenspaces. To do so in R, we can use the `st_area()` function within `sf`, which will calculate the area of each of our records/observations in our greenspace dataset. To store the output of this function as a new column in our `london_greenspace` dataset, we use a simple notation at the end of our `london_greenspace` variable: `$area_m`. The `$` in R means for this data frame, access the column that proceeds this sign. In our case, we do not as yet have a column called `area_m`, therefore R will automatically create this column and then store the outputs of the function in this column:
+
+```{r size-up-that-greenspace, cache=TRUE}
+# calculate area
+london_greenspace$area_m <- st_area(london_greenspace)
+```
+
+Once we have our area column, we can now filter our dataset based on that column and filter out all greenspace with an area that is smaller than 50,000 square meters.
+
+```{r only-real-greenspace-pls, cache=TRUE}
+# filter large greenspaces
+large_london_greenspace <- london_greenspace %>% filter(area_m > set_units(50000.0, m^2))
+```
+
+We now can look at our final greenspace dataset against our london outline to see its final coverage:
+
+```{r check-that-final-greenspace, cache=TRUE}
+# inspect
+tm_shape(london_outline) + 
+  tm_polygons() + 
+tm_shape(large_london_greenspace) + 
+  tm_polygons()
+```
+
+### Buffering
+We now have our London greenspace dataset - we are ready for the last step of processing with this dataset - generating our buffers that we can use to find all schools within 400 meters of the large greenspace areas. Once again, the `sf` library has a function for generating buffers - we just need to know how to deploy it successfully on our London greenspace dataset - and this involves understanding how to denote our distance correctly - as well as understanding if and how we can dissolve our buffer into a single record.
+
+To do this, we would investigate the documentation of the function `st_buffer()` to find out what additional parameters it takes - and how. What we can find out is that we need to (of course!) provide a distance for our buffer - **but** whatever figure we supply, this will be interpreted within the **units** of the CRS we are using. In our case, we are using *British National Grid* and, luckily for us, the units of the CRS is metres - which makes are life significantly easier when calculating these buffers. For other CRS, many use a base unit of an Arc Degree, e.g. WGS84. In this case, you technically have two options: 1) reproject your data into a CRS that uses metres as its base unit OR 2) convert your distance into an Arc Degree measurement. **Always choose Option 1.**
+
+Fortunately none of this is our concern - we know we can simply input the figure of 400 into our buffer and this will generate a buffer of 400m. 
+
+```{r buffer-buffer, cache=TRUE}
+# greenspace buffer
+gs_buffer_400m <- st_buffer(large_london_greenspace, dist=400)
+```
+
+As our final bit of processing with our greenspace buffer, we want to dissolve the whole buffer into a single record. To do this, we'll replicate the code used for our London ward dissolve, creating a an area value for our buffer records in the process to be used within the summarisation - and then result in a new gs_buffer_400m_single variable:
+
+```{r dissolve-that-buffer, cache=TRUE}
+# dissolve greenspace buffer
+gs_buffer_400m_single <- gs_buffer_400m %>% summarise(area = sum(st_area(gs_buffer_400m)))
+
+# inspect
+tm_shape(london_outline) + 
+  tm_polygons() + 
+tm_shape(gs_buffer_400m_single) + 
+  tm_polygons()
+```
+
+## Greenspace in London
+Great, we are now ready to bring our two datasets together reaady for anlaysis - and to do so, we'll use subsetting as well as the `st_intersects()` function, although with this one, we'll use it in two different ways!
+
+Our first task is to identify those schools that have access to greenspace - and extract them to create a new variable for use within our final point-in-polygon count (i.e. how many schools within each ward has access to greenspace). As we know, we can subset our london_schools dataset by our greenspace buffer quite easily using the subset approach:
+
+```{r schools-with-that-green, cache=TRUE}
+# schools within 400m of greenspace
+london_schools_gs <- london_schools_prj_ss[gs_buffer_400m_single,]
+```
+
+Our *london_schools_gs* variable has been subsetted correctly if we end up with 1,770 records, instead of the 3,372 records we had previously. We can now use this dataset and our previous *london_schools_prj_ss* dataset to create counts at the ward level. But before we do that, we will create a binary attribute of greenspace access within our *london_schools_prj_ss* variable to visualise our school 'points'. To do this, we'll use the `st_intersects()` function mentioned above and add a new column, *gs_access* (i.e. greenspace access), which will tell us which schools have access to greenspace or not. 
+
+The `st_intersects()` function is really useful as its output is a simple `TRUE` or `FALSE` statement - does this record intersect with the greenspace buffer? This result is what will be stored in our new column as a TRUE or FALSE response and what we can use to map our schools and their greenspace access:
+
+```{r boolean-greenspace-schools, cache=TRUE}
+# greenspace access
+london_schools_prj_ss$gs_access <- st_intersects(london_schools_prj_ss, gs_buffer_400m_single, sparse=FALSE)
+```
+
+We could go ahead and recode this to create a 1 or 0, or YES or NO after processing, but for now we'll leave it as `TRUE` or `FALSE`. We can go head and now visualise our schools based on this column, to see if they have access (`TRUE`) or do not have access (`FALSE`) to greenspace. To do this, we'll use the `tmap` library again:
+
+```{r show-that-space, cache=TRUE}
+# inspect
+tm_shape(london_schools_prj_ss) + 
+  tm_dots(col='gs_access', palette='BuGn')
+```
+
+You'll be pleased to read that we are finally here - we are at the last stage of our processing and can finally create the ward-level percentage of schools that have greenspace access, versus those that do not! To do this, we'll be counting the number of points in each of our polygons, i.e. the number of schools in each ward.
+
+To do so in R and with `sf`, it is one line of code - which at first look does not sound at all like it is completing a point-in-polygon calculation - but it does! To create a PIP count within `sf`, we use the `st_intersects()` function again - but instead of using the output of `TRUE` or `FALSE`, what we actually extract from our function is its `lengths` recording. The `lengths` part of this function records how many times a join feature (i.e. our schools) intersects with our main features (i.e. our wards). (Note here, we *do not* set the sparse function to `FALSE` but leave it as TRUE/its default by not entering the parameter). As a result, the length of this list is equal to the count of how many schools are within the polygon - i.e. a PIP calculation.
+
+This is a really simple way of doing a PIP calculation - and makes it easy for us to store the output of the function and its `lengths` (and thus the count) directly as a column within our `london_wards` dataset, as so:
+
+```{r point-in-polygon-schools, cache=TRUE}
+# total number of schools in each ward 
+london_wards$total_schools <- lengths(st_intersects(london_wards, london_schools_prj_ss))
+
+# total number of schools with greenspace access in each ward
+london_wards$gs_schools <- lengths(st_intersects(london_wards, london_schools_gs))
+```
+
+As you can see from the code above, we've now calculated this for our total schools dataset and the schools that have access to greenspace. The final step in our processing therefore is to create our rate. To do so, we'll use the same approach of generating a new column within our `london_wards` dataset - and then use a mathematical formula to calculate our rates:
+
+```{r rate-those-schools}
+# percentage of schools with greenspace access
+london_wards$gs_rate <- (london_wards$gs_schools/london_wards$total_schools)*100
+```
+
+And that's it! We now have our greenspace rate for our wards, which we can now again map:
+
+```{r plot-the-final-result-yall, cache=TRUE}
+# inspect
+tm_shape(london_wards) + 
+  tm_polygons(col='gs_rate', palette='Greens')
+```
+
+We now have our final dataset ready for analysis. Right now, we haven't introduced you to any statistical or spatial analysis techniques to fully analyse our dataset - but instead, we can focus on what are data shows visually!
+
+The last step of any programming is to extract our variables into permanent datasets for use at a later time. You can at any point in this practical, extract a permanent data file for each of our variables. For now, we'll extract our new `london_wards` dataset as we might want to use this in some additional analysis that we could look at next week or for our assessments at a later stage. The great thing about coding this up now, is that it will be easy to re-run all of this analysis and export any of the variables, again, at a later time!
+
+```{r save-those-wards, eval=FALSE}
+# write
+st_write(obj=london_wards, dsn='data/london_ward_gs.shp', delete_dsn=TRUE)
+```
+
+You should now see the dataset appear in your files!
+
+## Attributions {#attributions_w03}
+This week's content and practical uses content and inspiration from:
+
+- Wilkin, Jo. 2020. Analysing school access to greenspace in London. https://github.com/jo-wilkin/R-GIS-Tutorials/blob/master/greenspace_access.Rmd
+
+<!--chapter:end:01-spatial-operations.Rmd-->
+
+# Spatial autocorrelation 
+
+## This week {#this_week_w04}
+This week, we focus on the first of two key properties of spatial data: spatial dependence. Spatial dependence is the idea that the observed value of a variable in one location is often dependent (to some degree) on the observed value of the same value in a nearby location. For spatial analysis, this dependence can be assessed and measured statistically by considering the level of spatial autocorrelation between values of a specific variable, observed in either different locations or between pairs of variables observed at the same location. Spatial autocorrelation occurs when these values are not independent of one another and instead cluster together across geographic space. 
+
+A critical first step of spatial autocorrelation is to define the criteria under which a spatial unit (e.g. an areal or point unit) can be understood as a "neighbour" to another unit. As highlighted in previous weeks, spatial properties can often take on several meanings, and as a result, have an impact on the validity and accuracy of spatial analysis. This multiplicity also can be applied to the concept of spatial neighbours which can be defined through adjacency, contiguity or distance-based measures. As the specification of these criteria can impact the results, the definition followed therefore need to be grounded in particular theory that aims to represent the process and variable investigated. 
+
+## Case study {#case_study_w04}
+This week looks at spatial dependence and autocorrelation in detail, focusing on the different methods of assessment. As part of this, we look at the multiple methods to defining spatial neighbours and their suitability of use across different spatial phenomena – and how this approach is used to generate spatial weights for use within these spatial autocorrelation methods as well as their potential to generate spatially-explicit variables. 
+
+We put these learnings into practice through an analysis of spatial dependence of areal crime data, experimenting with the deployment of different neighbours and the impact of their analyses. For this practical we will look at the distribution of thefts from persons in the borough of Camden.
+
+## Neighbours
+If we want to come up with quantifiable descriptions of variables and how they vary over space, then we need to find ways of quantifying the distance from point to point. When you attach values to the polygons of wards in London, and visualise them, different patterns appear, and the different shapes and sizes of the polygons effect what these patterns look like. There can appear to be clusters, or the distribution can be random. If you want to explain and discuss variables, the underlying causes, and the possible solutions to issues, it becomes useful to quantify how clustered, or at the opposite end, how random these distributions are. This issue is known as spatial autocorrelation.
+ 
+In raster data, variables are measured at regular spatial intervals (or interpolated to be represented as such). Each measurement is regularly spaced from its neighbours, like the pixels on the screen you are reading this from. With vector data, the distance of measurement to measurement, and the size and shape of the "pixel" of measurement becomes part of the captured information. Whilst this can allow for more nuanced representations of spatial phenomena, it also means that the quantity and type of distance between measurements needs to be acknowledged. 
+
+If you want to calculate the relative spatial relation of distributions, knowledge of what counts as a "neighbour" becomes useful. Neighbours can be neighbours due to euclidean distance (distance in space), or they can be due to shared relationships, like a shared boundary, or they can simply be the nearest neighbour, if there aren't many other vectors around. Depending on the variable you are measuring the appropriateness of neighbourhood calculation techniques can change.
+
+## Getting started {#getting_started_w04}
+To begin let's load the libraries needed for this practical. Install the libraries where necessary.
+
+``` {r 04-a-loading-in-libraries, warning=FALSE, eval=FALSE}
+# libraries
+library(sf)
+library(nngeo)
+library(data.table)
+library(tmap)
+library(tidyverse)
+```
+
+``` {r 04-a-loading-in-libraries-for-realz, echo=FALSE, warning=FALSE}
+# libraries
+suppressMessages(library(sf))
+suppressMessages(library(nngeo))
+suppressMessages(library(data.table))
+suppressMessages(library(tmap))
+suppressMessages(library(tidyverse))
+```
+
+Download the data necessary for the practical and put it in a folder we can find. We will use the same structure as the data directory from the previous week. If you are using the same directory for this weeks work then you can put these files in the same directories. If not make new ones with names that work. Alternatively you can make your own structure and use that. 
+
+<div class="note">
+**Note**<br/>
+To follow along with the code as it is and not edit the file paths there should be a folder called **data/** in your project working directory, if not best to make one. Inside this create a folder called **crime**. Put the *2019_camden_theft_from_person.csv* file in that folder. Inside your **data/** directory there should already be a folder called **administrative_boundaries**. Save the files belonging to the *OAs_camden_2011.shp* in here.
+</div>
+
+#### File download {-}
+| File                                                 | Type           | Link |
+| :------                                              | :------        | :------ |
+| Theft in Camden                                      |`shp`, `csv`    | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/camden_theft.zip) |
+
+## Loading our datasets {#loading_data_w04}
+Now we have the data in the correct folders, we can load and plot the shape data.
+
+```{r load-those-shapes-for-camden, echo=TRUE}
+# load camden boundaries
+camden_oas <- st_read('data/administrative_boundaries/OAs_camden_2011.shp', crs=27700)
+
+# inspect
+tm_shape(camden_oas) +
+  tm_polygons()
+```
+
+You can see how one of these output areas could have many more neighbours than others, they vary a great deal in size and shape. The dimensions of these objects change over space, as a result the measurements within them must change too.
+
+Output areas are designed to convey and contain census information, so they are created in a way that maintains a similar number of residents in each one. The more sparsely populated an OA the larger it is. Output Areas are designed to cover the entirety of the land of England and Wales so they stretch over places where there are no people. In the north of Camden the largest Ouput Areas span over Hampstead Heath, a large park.
+
+Let's explore how to find different kinds of neighbours using the example of one 'randomly' selected output area (**E00004174**) that happens to contain the UCL main campus.
+
+``` {r 04-c-highlighting-one-oa}
+# highlight E00004174
+tm_shape(camden_oas) +
+  tm_borders(col='black') +
+tm_shape(camden_oas[camden_oas$OA11CD=='E00004174',]) +
+  tm_fill(col='red')
+```
+
+## Euclidean neighbours
+The first way we are going to call something a neighbour is by using Euclidean distance. As our OA shapefile is projected in BNG (British National Grid), the coordinates are planar, going up 1 is the same distance as going sideways 1. Even better the coordinates are in metric measurements so it's easy to make up heuristic distances. 
+
+Let's call every output area with a centroid 500m or less away from the centroid of our chosen OA a neighbour:
+
+- we select only the the centroid of our chosen output area and all other areas (with `st_centroid()`)
+- we set the maximum number of neighbours we want to find to "50" (with parameter `k`)
+- we set the maximum distance of calling an OA centroid a neigbour to "500" (with parameter `maxdist`)
+- we return a sparse matrix that tells us whether each OA is a neighbour or not (with parameter `sparse`)
+
+``` {r 04-d-euclidean-distance-neighbour, warning=FALSE, cache=TRUE}
+# assign our chosen OA to a variable 
+chosen_oa <- 'E00004174'
+
+# identify neighbours
+chosen_oa_neighbours <- st_nn(st_geometry(st_centroid(camden_oas[camden_oas$OA11CD==chosen_oa,])), 
+                              st_geometry(st_centroid(camden_oas)),
+                              sparse = TRUE,
+                              k = 50,
+                              maxdist = 500) 
+
+# inspect
+class(chosen_oa_neighbours)
+
+# get the names (codes) of these neighbours
+neighbour_names <- camden_oas[chosen_oa_neighbours[[1]],]
+neighbour_names <- neighbour_names$OA11CD
+
+# inspect
+tm_shape(camden_oas) + 
+  tm_borders() +
+  # highlight only the neighbours
+  tm_shape(camden_oas[camden_oas$OA11CD %in% neighbour_names,]) + 
+  tm_fill(col = 'green') +
+  # highlight only the chosen OA
+  tm_shape(camden_oas[camden_oas$OA11CD==chosen_oa,]) + 
+  tm_fill(col = 'red') +
+  tm_shape(camden_oas) + 
+  # overlay the borders
+  tm_borders(col='black')
+```
+
+## Shared boundary neighbours
+The next way of calculating neighbours takes into account the actual shape and location of the polygons in our shapefile. This has only recently been added to the world of `sf()`, previously we would have reverted to using the `sp()` package and others that depend on it such as `spdep()`.
+
+We can create two functions that check whether any polygons share boundaries or overlap one another, and then also check by how much. These new functions are based on the `st_relate()` function. The different cases of these are known as queen, and rook. These describe the relations in a similar way to the possible chess board movements of these pieces. 
+
+``` {r 04-e-shared-boundary-neighbour-function-creation, cache=TRUE}
+# for rook case
+st_rook = function(a, b = a) st_relate(a, b, pattern = 'F***1****')
+
+# for queen case
+st_queen <- function(a, b = a) st_relate(a, b, pattern = 'F***T****')
+```
+
+Now that we've created the functions lets try them out.
+
+``` {r 04-f-shared-boundary-neighbour-example, cache=TRUE}
+# identify neighbours
+chosen_oa_neighbours <- st_rook(st_geometry(camden_oas[camden_oas$OA11CD==chosen_oa,]), 
+                                st_geometry(camden_oas))
+
+# get the names (codes) of these neighbours
+neighbour_names <- camden_oas[chosen_oa_neighbours[[1]],]
+neighbour_names <- neighbour_names$OA11CD
+
+# inspect
+tm_shape(camden_oas) + 
+  tm_borders() +
+  # highlight only the neighbours
+  tm_shape(camden_oas[camden_oas$OA11CD %in% neighbour_names,]) + 
+  tm_fill(col = 'green') +
+  tm_shape(camden_oas[camden_oas$OA11CD==chosen_oa,]) + 
+  # highlight only the chosen OA
+  tm_fill(col = 'red') +
+  tm_shape(camden_oas) + 
+  # overlay the borders
+  tm_borders(col='black')
+```
+
+<div class="note">
+**Note**<br/>
+Because the tolerance of the shared boundaries in the `st_rook()` pattern and the `st_queen()` pattern, in this example they both assign the same neighbours. This is true for many non-square polygons as the difference is often given as whether two shapes share one or more points. Therefore the difference can have more to do with the resolution and alignment of your polygons than the actual spatial properties they represent. They can and do find different neighbours in other situations. Follow the grid example in the `st_relate()` documentation if you want to see it working.
+</div>
+
+## Theft in Camden
+Now that we have found the different ways of finding neighbours we can consider how they relate to one another. There are two ways of looking at spatial autocorrelation:
+
+- **Global:** This is a way of creating a metric of how regularly or irregularly clustered the variables are over the entire area studied.
+- **Local:** This is the difference between an area and its neighbours. You would expect neighbours to be similar, but you can find exceptional places and results by seeing if places are quantifiably more like or dislike their neighbours than the average other place. 
+
+But before we start that let's get into the data we are going to use! We'll be using personal theft data from around Camden. Our neighbourhood analysis of spatial autocorrelation should allow us to quantify the pattern of distribution of reported theft from persons in Camden in 2019.
+
+``` {r 04-g-loading-in-crime-data, cache=TRUE}
+# load theft data
+camden_theft <- fread('data/crime/2019_camden_theft_from_person.csv')
+
+# convert csv to sf object
+camden_theft <- st_as_sf(camden_theft, coords = c('X','Y'), crs = 27700)
+
+# inspect
+tm_shape(camden_oas) +
+  tm_polygons() +
+tm_shape(camden_theft) +
+  tm_dots()
+```
+
+This is point data, but we are interested in the polygons and how this data relates to the administrative boundaries it is within. Let's count the number of thefts in each OA. This is a spatial operation that is often called "point in polygon". As we are just counting the number of occurrences in each polygon it is quite easy. In the future you may often want to aggregate over points for an area, or in reverse assign values from the polygon to the points.
+
+``` {r 04-h-point-in-polygon, cache=TRUE}
+# thefts in camden
+camden_oas$n_thefts <- lengths(st_intersects(camden_oas, camden_theft))
+
+# inspect
+tm_shape(camden_oas) +
+  tm_fill(col='n_thefts')
+```
+
+You can see our map isskewed by central London, meaning that the results in central London (the south of Camden) are so much larger than those in the north that it makes it harder to see the smaller differences between other areas. We'll take the square root of the number of thefts to remedy this.
+
+``` {r 04-square-root, cache=TRUE}
+# square root of thefts
+camden_oas$sqrt_n_thefts <- sqrt(camden_oas$n_thefts)
+
+# inspect
+tm_shape(camden_oas) +
+  tm_fill(col='sqrt_n_thefts')
+```
+
+There: a slightly more nuanced picture
+
+## Global Moran's I
+With a [Global Moran's I](https://en.wikipedia.org/wiki/Moran%27s_I) we can test how "random" the spatial distribution of these values is. Global Moran's I is a metric between -1 and 1. -1 is a completely even spatial distribution of values, 0 is a "random" distribution, and 1 is a "non-random" distribution of clearly defined clusters.
+
+To calculate the Global Moran's I you need an adjacency matrix that contains the information of whether or not an OA is next to another. For an even more nuanced view you can include distance, or a distance weighting in the matrix rather than just the TRUE or FALSE, to take into account the strength of the neighbourhoodness. Because of the way Moran's I functions in R it is necessary to use the `sp` and `spdep` libraries. So load them in.
+
+``` {r 04-j-load-sp-spdep, warning=FALSE, cache=TRUE}
+# libraries
+library(sp)
+library(spdep)
+```
+
+As you will see these methods and functions have quite esoteric and complicated syntax. Some of the operations they will do will be similar to the examples shown earlier, but the way they assign and store variables makes it much quicker to run complex spatial operations.
+
+``` {r 04-k-converting-to-sp, cache=TRUE}
+# inspect
+class(camden_oas)
+
+# convert to sp
+camden_oas_sp <- as_Spatial(camden_oas, IDs=camden_oas$OA11CD)
+
+# inspect
+class(camden_oas_sp)
+```
+
+Now we can make the esoteric and timesaving "nb" object in which we store for each OA which other OAs are considered to be neighbours.
+
+``` {r 04-l-nb-time, cache=TRUE}
+# create an nb object
+camden_oas_nb <- poly2nb(camden_oas_sp, row.names=camden_oas_sp$OA11CD)
+
+# inspect
+class(camden_oas_nb)
+
+# inspect
+str(camden_oas_nb,list.len=10)
+```
+
+Next, we need to assign weights to each neighbouring polygon. In our case, each neighbouring polygon will be assigned equal weight with `style='W'`. After this, we can calculate a value for the Global Moran's I. 
+
+``` {r 04-n-list-weights-object, cache=TRUE}
+# create the list weights object
+nb_weights_list <- nb2listw(camden_oas_nb, style='W')
+
+# inspect
+class(nb_weights_list)
+
+# Moran's I
+mi_value <- moran(camden_oas_sp$n_thefts,nb_weights_list,n=length(nb_weights_list$neighbours),S0=Szero(nb_weights_list))
+
+# inspect
+mi_value
+```
+
+The Global Moran's I seems to indicate that there is indeed some spatial autocorrelation in our data, however, this is just a quick way to check the score. To do so properly we need to compare our score a randomly distributed version of the variables. We can do this by using something called a [Monte Carlo simulation](https://en.wikipedia.org/wiki/Monte_Carlo_method).
+
+``` {r 04-o-monte-carlo-moran, cache=TRUE}
+# run a Monte Carlo simulation 599 times
+mc_model <- moran.mc(camden_oas_sp$n_thefts, nb_weights_list, nsim=599)
+
+# inspect
+mc_model
+```
+
+This model shows that our distribution of thefts differs significantly from a random distribution. As such, we can conclude that there is significant spatial autocorrelation in our theft dataset.
+
+## Local Moran's I
+With a measurement of local spatial autocorrelation we could find hotspots of theft that are surrounded by areas of much lower theft. According to the previous global statistic these are not randomly distributed pockets but would be outliers against the general trend of clusteredness! These could be areas that contain very specific locations, where interventions could be made that drastically reduce the rate of crime rather than other areas where there is a high level of ambient crime.
+
+``` {r 04-p-local-spatial-autocorrelation, cache=TRUE}
+# create an nb object
+camden_oas_nb <- poly2nb(camden_oas_sp, row.names=camden_oas_sp$OA11CD)
+
+# create the list weights object
+nb_weights_list <- nb2listw(camden_oas_nb, style='W')
+
+# Local Moran's I
+local_moran_camden_oa_theft <- localmoran(camden_oas_sp$n_thefts, nb_weights_list)
+```
+
+To properly utilise these local statistics and make an intuitively useful map, we need to combine them with our crime count variable. Because of the way the new variable will be calculated, we first need to rescale our variable so that the mean is 0. 
+
+``` {r 04-q-rescale, cache=TRUE}
+# rescale
+camden_oas_sp$scale_n_thefts <- scale(camden_oas_sp$n_thefts)
+```
+
+To compare this rescaled value against its neighbours, we subseuqnetly need to create a new column that carries information about the neighbours. This is called a spatial lag function. The "lag" just refers to the fact you are comparing one observation against another, this can also be used between timed observations. In this case, the "lag" we are looking at is between neighbours.
+
+``` {r 04-r-spatial-lag, cache=TRUE}
+# create a spatial lag variable 
+camden_oas_sp$lag_scale_n_thefts <- lag.listw(nb_weights_list, camden_oas_sp$scale_n_thefts)
+```
+
+Now we have used `sp` for all it is worth it's time to head back to the safety of `sf()` before exploring any forms of more localised patterns.
+
+``` {r 04-s-back-to-sf, cache=TRUE}
+# convert to sf
+camden_oas_moran_stats <- st_as_sf(camden_oas_sp)
+```
+
+To make a human readable version of the map we will generate some labels for our findings from the [Local Moran's I](https://en.wikipedia.org/wiki/Indicators_of_spatial_association) stats. This process calculates what the value of each polygon is compared to its neighbours and works out if they are similar or dissimilar and in which way, then gives them a text label to describe the relationship.
+
+``` {r 04-t-conditional-labelling, cache=TRUE}
+# set a significance value
+sig_level <- 0.1
+
+# classification with significance value
+camden_oas_moran_stats$quad_sig <- ifelse(camden_oas_moran_stats$scale_n_thefts > 0 & 
+                                          camden_oas_moran_stats$lag_scale_n_thefts > 0 & 
+                                          local_moran_camden_oa_theft[,5] <= sig_level, 
+                                          'high-high', 
+                                   ifelse(camden_oas_moran_stats$scale_n_thefts <= 0 & 
+                                          camden_oas_moran_stats$lag_scale_n_thefts <= 0 & 
+                                          local_moran_camden_oa_theft[,5] <= sig_level, 
+                                          'low-low', 
+                                   ifelse(camden_oas_moran_stats$scale_n_thefts > 0 & 
+                                          camden_oas_moran_stats$lag_scale_n_thefts <= 0 & 
+                                          local_moran_camden_oa_theft[,5] <= sig_level, 
+                                          'high-low', 
+                                   ifelse(camden_oas_moran_stats$scale_n_thefts <= 0 & 
+                                          camden_oas_moran_stats$lag_scale_n_thefts > 0 & 
+                                          local_moran_camden_oa_theft[,5] <= sig_level, 
+                                          'low-high',
+                                   ifelse(local_moran_camden_oa_theft[,5] > sig_level, 
+                                          'not-significant', 
+                                          'not-significant')))))
+
+# classification without significance value
+camden_oas_moran_stats$quad_non_sig <- ifelse(camden_oas_moran_stats$scale_n_thefts > 0 & 
+                                              camden_oas_moran_stats$lag_scale_n_thefts > 0, 
+                                              'high-high', 
+                                       ifelse(camden_oas_moran_stats$scale_n_thefts <= 0 & 
+                                              camden_oas_moran_stats$lag_scale_n_thefts <= 0, 
+                                              'low-low', 
+                                       ifelse(camden_oas_moran_stats$scale_n_thefts > 0 & 
+                                              camden_oas_moran_stats$lag_scale_n_thefts <= 0, 
+                                              'high-low', 
+                                       ifelse(camden_oas_moran_stats$scale_n_thefts <= 0 & 
+                                              camden_oas_moran_stats$lag_scale_n_thefts > 0,
+                                              'low-high',NA))))
+```
+
+To understand how this is working we can look at the data non-spatially. As we rescaled the data, our axes should split the data neatly into their different area vs spatial lag relationship categories. Let's make the scatterplot using the scaled number of thefts for the areas in the x axis and their spatially lagged results in the y axis.
+
+``` {r 04-v-plotting-quadrants-scatter, cache=TRUE}
+# plot the results without the statistical significance
+ggplot(camden_oas_moran_stats, aes(x = scale_n_thefts, 
+                                   y = lag_scale_n_thefts, 
+                                   color = quad_non_sig)) +
+  geom_vline(xintercept = 0) + # plot vertical line
+  geom_hline(yintercept = 0) + # plot horizontal line
+  xlab('Scaled Thefts (n)') +
+  ylab('Lagged Scaled Thefts (n)') +
+  labs(colour='Relative to neighbours') +
+  geom_point()
+
+# plot the results with the statistical significance
+ggplot(camden_oas_moran_stats, aes(x = scale_n_thefts, 
+                                   y = lag_scale_n_thefts, 
+                                   color = quad_sig)) +
+  geom_vline(xintercept = 0) + # plot vertical line
+  geom_hline(yintercept = 0) + # plot horizontal line
+  xlab('Scaled Thefts (n)') +
+  ylab('Lagged Scaled Thefts (n)') +
+  labs(colour='Relative to neighbours') +
+  geom_point()
+```
+
+Now let's see how they are arranged spatially.
+
+``` {r 04-s-mapping-local-moran, cache=TRUE}
+# map all of the results here
+tm_shape(camden_oas_moran_stats) +
+  tm_fill(col = 'quad_non_sig')
+
+# map only the statistically significant results here
+tm_shape(camden_oas_moran_stats) +
+  tm_fill(col = 'quad_sig')
+```
+
+As our data are so spatially clustered we can't see any outlier places (once we have ignored the non-significant results). This suggests that the pattern of theft from persons is not highly concentrated in very small areas or particular Output Areas, and instead is spread on a larger scale than we have used here. To go further than we have today it would be possible to run the exact same code but using a larger scale, perhaps LSOA, or Ward, and compare how this changes the Moran's I statistics globally and locally. Or, to gain statistical significance in looking at the difference between areas getting more data perhaps over a longer timescale, where there are less areas with 0 thefts.
+
+## Attributions {#attributions_w04}
+This week's content and practical uses content and inspiration from:
+
+- Long, Alfie. 2020. Spatial autocorrelation. https://github.com/jtvandijk/GEOG0114_20202021/blob/master/04-week04.Rmd
+- Gimond, Manual. 2021. Spatial autocorrelation in R. https://mgimond.github.io/Spatial/spatial-autocorrelation-in-r.html
+
+<!--chapter:end:02-spatial-autocorrelation.Rmd-->
+
+# Point pattern analysis
+
+## This week {#this_week_w07}
+In our previous practicals, we have aggregated our point data into areal units, primarily using administrative geographies, to enable its easy comparison with other datasets provided at the same spatial scale, such as the census data used in the previous week, as well as to conduct spatial autocorrelation tests. However, when locations are precisely known, spatial point data can be used with a variety of spatial analytic techniques that go beyond the methods typically applied to areal data. The set of methods unique to point data are often referred to as point pattern analysis and geostatistics. Within point pattern analysis, we look to detect patterns across a set of locations, including measuring density, dispersion and homogeneity in our point structures. We will look at both distance-based methods, by employing Ripley's K function, as well as density-based methods, particularly Kernel Density Estimation.
+
+## Case study {#case_study_w07}
+In the previous weeks, we have aggregated our event data into areal units. In R we could do this very easily by identifying all points that fall within a polygon using the `st_intersects()` function from the `sf` package. We used this method, for instance, to 
+[aggregate 'theft from persons' in Camden in 2019](spatial-autocorrelation.html). However, depending on your research problem and aim, points do not necessarily have to be aggregated and there are many applications in which you want to work with the point locations directly. In fact, the R package `spatstat` for spatial statistics is predominantly designed for analysing spatial point patterns. The mere fact that the [`spatstat` documentation](https://cran.r-project.org/web/packages/spatstat/spatstat.pdf) has almost 1,800 pages should give you a good idea about the general importance of point pattern analysis within the domain of Social and Geographic Data Science. 
+
+## Getting started {#getting_started_w07}
+This week we will analyse the pattern of bicycle theft for the whole of [Greater London](https://en.wikipedia.org/wiki/Greater_London) in November 2019 using point pattern analysis. We also have access to the boundaries of the 33 [London boroughs](https://en.wikipedia.org/wiki/London_boroughs).
+
+#### File download {-}
+| File                                        | Type         | Link |
+| :------                                     | :------      | :------ |
+| Local Authority Districts London 2020      | `shp`        | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/london_lad_2020.zip) |
+| Bicycle theft data London 2019              | `csv`        | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/2019_london_bicycle_theft.zip) |
+
+Download the individual files to your own computer and as usual make sure your data directory is set up correctly and the data are unzipped. Once that is done, we can get started:
+
+```{r 06-settings-and-options, warnings=FALSE, message=FALSE, echo=FALSE}
+# settings
+options(max.print = 30)
+```
+
+```{r 06-load-libraries-and data, warnings=FALSE, message=FALSE}
+# load libraries
+library(tidyverse)
+library(spatstat)
+library(tmap)
+library(sf)
+library(maptools)
+
+# load spatial data
+lad <- st_read('data/administrative_boundaries/london_lad_2020.shp')
+
+# load data
+crime <- read_csv('data/crime/2019_london_bicycle_theft.csv')
+
+# inspect
+head(crime)
+
+# filter crime data, create point layer, and project into British National Grid (EPSG 27700)
+crime_dec <- crime[crime$month=='2019-11' & !is.na(crime$long) & !is.na(crime$lat),]
+crime_points <- st_as_sf(crime_dec, coords=c('long','lat'),crs=4326)
+crime_points <- st_transform(crime_points,27700)
+
+# ensure all points are within the boundaries of Greater London
+crime_london <- st_intersects(lad, crime_points)
+crime_points <- crime_points[unlist(crime_london),]
+
+# inspect
+tm_shape(lad) +
+  tm_fill() +
+tm_shape(crime_points) +
+  tm_dots()
+```
+
+Where we are now somehow familiar with the `sf` and `sp` packages, the `spatstat` package expects point data to be in yet another format: `ppp`. An object of the class `ppp` represents a two-dimensional point dataset within a pre-defined area, the window of observation. Because `spatstat` predates `sf` we do need to take several steps to transform our simple features object to a `ppp` object.
+
+<div class="note">
+**Note**<br/>
+As we are looking at a *point pattern*, a `ppp` object does not necessarily have to have attributes associated with the **events** (as point data are called within `spatstat`). Within the `spatstat` environment, attributes are referred to as **marks**. Be aware that some functions do require these marks to be present.
+</div>
+
+```{r 06-make-some-ppp-objects, warnings=FALSE, message=FALSE}
+# transform sf to sp
+lad_sp <- as(lad,'Spatial')
+
+# get the window of observation using maptools package
+window <- as.owin.SpatialPolygons(lad_sp)
+
+# inspect
+window
+
+# get coordinates from sf object
+crime_points_coords <- matrix(unlist(crime_points$geometry),ncol=2,byrow=T)
+
+# inspect
+crime_points_coords
+
+# create ppp object
+crime_ppp <- ppp(x=crime_points_coords[,1],y=crime_points_coords[,2],window=window,check=T)
+
+# inspect
+plot(crime_ppp)
+```
+
+Note the messages **data contain duplicated points**. This is an issue in spatial point pattern analysis as one of the assumptions underlying many analytical methods is that all events are unique; some statistical procedures actually may return very wrong results if duplicate points are found within the data. Long story short: we will need to deal with duplicates points. Although the way you do this is not always straightforward, you basically have two options:
+
+1. Remove the duplicates and pretend they are not there. However, only do this when you are sure that your research problem allows for this and you are happy to 'ignore' some of the data. For some functions (such as Kernel Density Estimation) it is also possible to assign weights to points so that, for instance, instead of having point **event A** and point **event B** at the same location you create a point **event C** with a **mark** (attribute) that specifies that this event should be weighted double.
+2. Force all points to be unique. For instance, if you know that the locations are not 'actual' event locations but rather the centroids of an administrative geography, we can slightly adjust all coordinates (jitter) so that the event locations do not exactly coincide anymore. This way we effectively deduplicate our point data without having to get rid off data points.
+
+```{r 06-lets-check-for-duplicates, warnings=FALSE, message=FALSE}
+# check for duplicates
+any(duplicated(crime_ppp))
+
+# count the number of duplicated points
+sum(multiplicity(crime_ppp) > 1)
+```
+
+This means we have 291 duplicated points. This seems a lot to simply remove. As these are crime data the exact locations are not revealed for privacy and safety reasons, meaning that all crimes get ['snapped' to a predefined point location](https://data.police.uk/about/#anonymisation)! Let's shift all our coordinates slighlty to 'remove' our duplicates and enforce all points to be unique.
+
+<div class="note">
+**Note**<br/>
+Remember that when you encounter a function in a piece of R code that you have not seen before and you are wondering what it does that you can get access the documentation through `?name_of_function`, e.g. `?multiplicity` or `?jitter`. For almost any R package, the documentation contains a list of arguments that the function takes, what these arguments mean / do, in which format the functions expects these arguments, as well as a set of usage examples. 
+</div>
+
+```{r 06-jitter-jitter-jitter, warnings=FALSE, message=FALSE}
+# add some jitter to our points
+crime_ppp_jitter <- rjitter(crime_ppp,retry=TRUE,nsim=1,drop=TRUE)
+
+# count the number of duplicated points
+any(duplicated(crime_ppp_jitter))
+
+# inspect
+plot(crime_ppp_jitter)
+```
+
+## Distance-based methods
+One way of looking at a point pattern is by describing the overall distribution of the pattern using distance-based methods. With an average nearest neighbour (ANN) analysis, for instance, we can measure the average distance from each point in the study area to its nearest point. If we then plot ANN values for different order neighbours, we will get an insight into the spatial ordering of all our points relative to one another. Let's try it.
+
+```{r 06-average-nearest-neighbours, warnings=FALSE, message=FALSE}
+# get the average distance to the first nearest neighbour
+mean(nndist(crime_ppp_jitter, k=1))
+
+# get the average distance to the second nearest neighbour
+mean(nndist(crime_ppp_jitter, k=2))
+
+# get the average distance to the third nearest neighbour
+mean(nndist(crime_ppp_jitter, k=3))
+
+# get the average distance to the first, second, ..., the hundredth, nearest neighbour
+crime_ann <- apply(nndist(crime_ppp_jitter, k=1:100),2,FUN=mean)
+
+# plot the results
+plot(crime_ann ~ seq(1:100))
+```
+
+For point patterns that are highly clusters one would expect the average distances between points to be very short. However, this is based on the important assumption that the point pattern is **stationary** throughout the study area. Further to this, the size and shape of the study area also have a very strong effect on this metric. In our case, the plot does not reveal anything interesting in particular except that higher order points seem to be slightly closer than lower order points.
+
+Rather than to look at the average distances of different orders neighbours, we can also look at the distance between a point and 'all distances' to other points and compare this to a point pattern that is generated in a random manner; i.e. compare our point distribution to a theoretical distribution that has been generated in a spatial random manner. This can be done with **Ripley's K** function. Ripley's K- function essentially summarises the distance between points for all distances using radial distance bands. The calculation is relatively straightforward:
+
+1. For point **event A**, count the number of points inside a buffer (radius) of a certain size. Then count the number of points inside a slightly larger buffer (radius). 
+2. Repeat this for every point event in the dataset.
+3. Compute the average number of points in each buffer (radius) and divide this to the overall point density.
+4. Repeat this using points drawn from a Poisson random model for the same set of buffers.
+5. Compare the observed distribution with the distribution with the Poisson distribution.
+
+We can conduct a Ripley’s K test on our data very simply with the spatstat package using the `Kest()` function. 
+
+<div class ="note">
+**Note**<br/>
+Be careful with running Ripley's K on large datasets as the function is essentially a series of nested loops, meaning that calculation time will increase exponentially with an increasing number of points.
+</div>
+
+```{r 06-ripley-and-his-k, warnings=FALSE, message=FALSE}
+# calculate Ripley's K for our bicycle theft locations, maximum radius of 4 kilometres
+plot(Kest(crime_ppp_jitter,correction='border',rmax=4000))
+```
+
+The *Kpois(r)* line shows the theoretical value of K for each distance radius (r) under a Poisson assumption of Complete Spatial Randomness. K values greater than the expected K, indicate clustering of points at a given distance band. In our example, bicycle theft seems to be more clustered than expected at distance below 1500 metres. In the same fashion as the average nearest neighbour analysis, Ripley's K assumes a stationary underlying point process.
+
+The maximum radius of four kilometres is, in this case, simply to zoom the plot as the line with the K values does not go beyond this distance. This is due to the *border* correction that we apply, which is necessary otherwise our Ripley's K function will run for a very long time! This border correction is also for a theoretical reason important: when analysing spatial point patterns we do not have any information about the points that are situated close to the boundaries of our observation window. This means that the neighbours (which we do not know about!) of these points cannot be taken into account in the metric. This can lead to significant bias in the estimates. One way of dealing with this border effect is by using the 'border method' ([Diggle 1979](https://doi.org/10.2307/2529938), [Ripley 1988](https://ucl-new-primo.hosted.exlibrisgroup.com/permalink/f/1klfcc3/TN_cdi_cambridge_cbo_10_1017_CBO9780511624131
+)), which takes out all points that are closer to the border of the observation window than they are to their nearest neighbour.
+
+## Density-based methods
+Although distance-based methods can give us an idea of the distribution of the underlying point pattern and suggest that some of the data are clustered, it does not tell us **where** the clustering is happening. Density-based methods can help us out here. We will start with a simple quadrat count by dividing the observation window into section and counting the number of bicycle thefts within each quadrant.
+
+```{r 06-quadrat-count, warnings=FALSE, message=FALSE, cache=TRUE}
+# quadratcount in a 15 x 15 grid across the observational window
+crime_quadrat <- quadratcount(crime_ppp_jitter,nx=15,ny=15)
+
+# inspect
+plot(crime_quadrat)
+```
+
+As we want to know whether or not there is any kind of spatial pattern present in our bicycle theft data, we need to look at our data and ask again whether the pattern is generated in a random manner; i.e. whether the distribution of points in our study area differs from **complete spatial randomness** (CSR) or whether there are some clusters present. Looking at our quadrat analysis, and with the results of our Ripley's K in the back of our minds, it is already quite clear that some quadrats have higher counts than others, however, we can once again generate a point dataset that adheres to the principles of complete spatial randomness and compare it to our dataset. We can do that again using a *Poisson point process*.
+
+```{r 06-random-points-poisson, warnings=FALSE, message=FALSE}
+# create and plot a completely spatially random point pattern of the same size as our bicycle theft data
+plot(rpoispp(1254))
+```
+
+The first thing you will see is that the points are not uniformly distributed. Furthermore, every time you run the function the outcome will be slightly different than the previous time because the points are sampled from a Poisson distribution. To check whether our bicycle theft points differ from complete spatial randomness (i.e. there is no clustering or dispersal of points) we can run a [Chi-Squared test] with the null hypotheses that our point data have been generated under complete spatial randomness.
+
+```{r 06-chi-square-it, warnings=FALSE, message=FALSE, cache=TRUE}
+# chi-square between observed pattern and Poisson sampled points
+quadrat.test(crime_ppp_jitter,nx=15,ny=15)
+```
+
+The p value is well below 0.05 (or 0.01 for that matter), and we can reject the null hypothesis: our point pattern was not generated in a random matter. Not very surprising. 
+
+Instead of looking at the distribution of our bicycle theft with the boundaries of our quadrats (or any other tessellation we could pick), we can also analyse our points using a **Kernel Density Estimation** (KDE). As was explained in the short lecture video, a KDE is a statistical technique to generate a smooth continuous surface representing the density of the underlying pattern. The resulting surface is created by placing a search window (kernel) over each point and attributing the sum of kernel values to a grid.
+
+```{r 06-kernel-density-estimation, warnings=FALSE, message=FALSE, cache=TRUE}
+# kernel density estimation with a 100 metre bandwidth
+plot(density.ppp(crime_ppp_jitter,sigma=100))
+
+# kernel density estimation with a 500 metre bandwidth
+plot(density.ppp(crime_ppp_jitter,sigma=500))
+
+# kernel density estimation with a 1000 metre bandwidth
+plot(density.ppp(crime_ppp_jitter,sigma=1000))
+```
+
+Notice the importance of the bandwidth that is selected. Larger bandwidths lead to a smoother surface, but there is a danger of oversmoothing your data! Smaller bandwidths lead to a more irregular shaped surface, but there is then the danger of undersmoothing. There are automated functions (e.g. based on [maximum-likelihood estimations](https://www.youtube.com/watch?v=XepXtl9YKwc)) that can help you with selecting an appropriate bandwidth, but in the end you will have to make a decision. 
+
+Although bandwidth typically has a more pronounced effect upon the density estimation than the type of kernel used, kernel types can affect the result too. Also here applies: the selection of the kernel depends on how much you want to weigh near points relative to far points (even though this is **also** influenced by the bandwidth!).
+
+```{r 06-kernel-density-estimation-kernels, warnings=FALSE, message=FALSE, cache=TRUE}
+# kernel density estimation with a Gaussian Kernel
+plot(density.ppp(crime_ppp_jitter,sigma=500,kernel='gaussian'))
+
+# kernel density estimation with a Quartic Kernel
+plot(density.ppp(crime_ppp_jitter,sigma=500,kernel='quartic'))
+
+# kernel density estimation with an Epanechnikov Kernel
+plot(density.ppp(crime_ppp_jitter,sigma=500,kernel='epanechnikov'))
+```
+
+Bandwidth typically has a more marked effect upon the density estimation than kernel type and is defined as the extent of the area around each grid cell from which the occurrences, and their respective kernels, are drawn. Do have a look at the article by [Shi 2008](https://www.tandfonline.com/doi/full/10.1080/13658810902950625) for some further considerations and deliberations when selecting bandwidths. 
+
+For now, however, no matter which kernel or which bandwidth (within reason, of course) we use, we can be quite confident in stating that bicycle theft in London in November 2019 is **not** a spatially random process and we can clearly see the areas where bicycle theft is most concentrated.
+
+## Point pattern analysis in practice
+Now we have an understanding on what constitutes point pattern analysis and which methods one can employ, we will move to some more practical examples of point pattern analysis as point data come in many shapes and forms.
+
+### Example: Uber
+A great example of a company having to deal with massive spatial point datasets is [Uber](https://www.uber.com/gb/en/). In fact, in order to analyse, visualise and explore their spatial point data, Uber developed a grid-based system called **H3** (is it already reminding you of our quadrat count somehow?!). Watch the YouTube video to see how Uber leverages hierachically nested hexagons for geospatial indexing and why this is so important in their use case.
+
+```{r 05-uber-h3-index,echo=FALSE}
+library(vembedr)
+embed_youtube('ay2uwtRO3QE',frameborder=1) %>% use_align('left')
+```
+
+### Example: GBNames
+Another example of point pattern analysis in practice, is Consumer Data Research Centre [GBNames](https://apps.cdrc.ac.uk/gbnames/) website. By using the residential locations of the bearers of surnames for different time periods, GBNames  explores the generational and inter-generational residential movements of family groups across Great Britain. One way to analyse and compare individual surname distributions over time without being hindered by changing administrative areas is, in fact, by point pattern analysis. This is done by assign every individual found in the historic census data to the centroid of the parish with which they are associated. Similarly, all individuals found in the contemporary [Consumer Registers](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476) are geocoded directly through the coordinates associated with each postcode. 
+
+Try to execute some surname searches and see if you can find any interesting patterns or differences between surnames. Also, try to understand what the additional Consumer Statistics mean - these are already a small bridge to the material of W09 which will involve a closer look at geodemographics!
+
+## Assignment {#assignment_w07}
+Now you have seen the GBNames website and you know how to execute a Kernel Density Estimation, it is time you try it yourself. Below are three datasets with the locations of the bearers of three different surnames (Longley, Wilkins, Van Dijk). Each dataset contains a surname, a x-coordinate and a y-coordinate (both already projected in [EPSG 27700](https://epsg.io/27700)). Your task is to analyse these three surname distributions using Kernel Density Estimation. 
+
+<div class ="note">
+**Note**<br/>
+For privacy reasons the surname data you will be using are not actual data but are made to closely represent the actual data!
+</div>
+
+This will involve you having to make some decisions: Which **kernel** to use? Which **bandwidth** to use? Why? Do you differ the bandwidth *between* different surname searches or do you keep them the same? 
+
+<div class ="note">
+**Note**<br/>
+Whilst we have been using `spatstat` for creating our KDE, there are also other packages available (such as `sparr`). If you are up for a challenge, feel free to see if you can create your KDE maps using a different package! 
+</div>
+
+#### File download {-}
+| File                                                 | Type           | Link |
+| :------                                              | :------        | :------ |
+| Surname bearer files (Longley, Wilkins, Van Dijk)    | `csv`          | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/surname_bearers.zip) |
+| Simplified boundaries of Great Britain               | `shp`          | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/gb_outline.zip) |
+
+## Attributions {#attributions_w07}
+This week's content and practical uses content and inspiration from:
+
+- Gimond, M. 2020. Geodesic geometry. https://mgimond.github.io/Spatial/index.html
+- Medina, J, Solymosi, R. 2019. Crime Mapping in R. https://maczokni.github.io/crimemapping_textbook_bookdown/
+
+<!--chapter:end:03-point-pattern-analysis.Rmd-->
+
 # Geodemographics
 
 ## This week {#this_week_w09}
