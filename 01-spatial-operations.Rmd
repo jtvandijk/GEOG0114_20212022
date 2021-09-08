@@ -62,12 +62,12 @@ library(tmap)
 library(units)
 ```
 
-## Loading our datasets
+## Loading our datasets {#loading_data_w03}
 For this analysis we have three different datasets available: schools in London, greenspace in London (split into two separate datasets), and wards (an administrative geography) in London. All three of our datasets are provided as shapefiles which will make working with the data relatively straight-forward (e.g. even for our point data, the schools, we do not need to convert them from  a `csv` as we often find with this type of data). **But** we'll need to do quite a few steps of processing to get our final dataset.
 
 Let's go ahead and load our three variables - we will use the `sf` library `st_read()` command to load our datasets into variables for use within our code:
 
-```{r load-those-shapes, echo=TRUE}
+```{r load-those-shapes, echo=TRUE, cache=TRUE}
 # load london schools
 london_schools <- st_read(here::here('data/schools', 'school_data_london_2016.shp'))
 
@@ -81,7 +81,7 @@ TQ_greenspace <- st_read(here::here('data/greenspace', 'TQ_GreenspaceSite.shp'))
 
 To see what each variable looks like, you can type in `plot(name_of_variable)` into the R console. This is a quick command to understand both the spatial coverage and attributes of your data - as it will display the data by each of its attribute fields as a plot.
 
-## Data Processing
+## Data Processing 
 Now we have our data loaded as variables, we're ready to start processing! In spatial data processing, the question always is: where do I start first? And the easiest answer to that is: **make sure all of your data is in the same Projected (or Coordinate) Reference System as each other**. Checking - and changing projections - should always be the first step of any workflow as this will ensure you do not carry through any potential mistakes or errors that using the wrong system can cause.
 
 ### Reprojecting
@@ -89,7 +89,7 @@ When you loaded your datasets in the above step, you may have notice that in the
 
 To reproject our dataset, we can use a function within the `sf` library, known as `st_transform()`. It is very simple to use - you only need to provide the function with the dataset and the code for the new CRS you wish to use with the data. For now, we will simply store the result of this transformation as a new variable - but you could in the future, rewrite this code to use pipes to pipe this transformation when loading the dataset.
 
-```{r reproject}
+```{r reproject, cache=TRUE}
 # reproject london schools form WGS84 to BNG 
 london_schools_prj <- st_transform(london_schools, 27700)
 ```
@@ -105,7 +105,7 @@ As you can see from the output above, our dataset has been reprojected into EPSG
 
 The next step to process our `london_schools_prj` dataset is to reduce the schools to only our chosen London extent. As you can see from the map above, our schools cover an area larger than our usual London extent. We can even make a quick map of this to check this properly:
 
-```{r where-those-schools-at}
+```{r where-those-schools-at, cache=TRUE}
 # inspect
 tm_shape(london_wards) + 
   tm_polygons() + 
@@ -118,7 +118,7 @@ As we can see, we indeed  have schools outside of our London wards - as a result
 ### Dissolving
 To dissolve a polygon shapefile using R code, we will use the `summarise()` function that comes from the `dplyr` library (part of the `tidyverse`) and summarise our London Wards dataset by summing its total area (supplied in the *HECTARES* attribute field/column) across all records. This will reduce our data frame to a single row, which will only contain one attribute - our total area of London, which we can then map/use as our clip (cookie-cutter) feature! 
 
-```{r dissolve-them-wards}
+```{r dissolve-them-wards, cache=TRUE}
 # dissolve
 london_outline <- london_wards %>% summarise(area = sum(HECTARES))
 
@@ -136,8 +136,8 @@ First, we can either use `[]` just like you would use for selecting and slicing 
 
 To keep things simple, we will use the base subsetting approach - which also works similarly when programming in Python, for instance.
 
-```{r sub-set}
-# suubset London schools
+```{r sub-set, cache=TRUE}
+# subset London schools
 london_schools_prj_ss <- london_schools_prj[london_outline,]
 ```
 
@@ -148,7 +148,7 @@ In a case like above, you can just overwrite the current *london_schools_prj* va
 
 Once you have run the above code, you should notice that your *london_schools_prj_ss* variable now only contains 3,372 records, instead of the original 3,889. We can also plot our variable using the same code as above, to double-check that it worked:
 
-```{r inspect-that-sub-set}
+```{r inspect-that-sub-set, cache=TRUE}
 # inspect
 tm_shape(london_wards) + 
   tm_polygons() + 
@@ -189,21 +189,21 @@ Now we have only London greenspaces in our dataset, the next step, is to reduce 
 
 To be able to query on our area, we must first calculate the area of each of our greenspaces. To do so in R, we can use the `st_area()` function within `sf`, which will calculate the area of each of our records/observations in our greenspace dataset. To store the output of this function as a new column in our `london_greenspace` dataset, we use a simple notation at the end of our `london_greenspace` variable: `$area_m`. The `$` in R means for this data frame, access the column that proceeds this sign. In our case, we do not as yet have a column called `area_m`, therefore R will automatically create this column and then store the outputs of the function in this column:
 
-```{r size-up-that-greenspace}
+```{r size-up-that-greenspace, cache=TRUE}
 # calculate area
 london_greenspace$area_m <- st_area(london_greenspace)
 ```
 
 Once we have our area column, we can now filter our dataset based on that column and filter out all greenspace with an area that is smaller than 7,140 square meters (i.e. the size of a football pitch!).
 
-```{r filter_area}
+```{r only-real-greenspace-pls, cache=TRUE}
 # filter large greenspaces
 large_london_greenspace <- london_greenspace %>% filter(area_m > set_units(76900.0, m^2))
 ```
 
 We now can look at our final greenspace dataset against our london outline to see its final coverage:
 
-```{r quick_plot_3}
+```{r check-that-final-greenspace, cache=TRUE}
 # inspect
 tm_shape(london_outline) + 
   tm_polygons() + 
@@ -214,18 +214,18 @@ tm_shape(large_london_greenspace) +
 ### Buffering
 We now have our London greenspace dataset - we are ready for the last step of processing with this dataset - generating our buffers that we can use to find all schools within 400 meters of the large greenspace areas. Once again, the `sf` library has a function for generating buffers - we just need to know how to deploy it successfully on our London greenspace dataset - and this involves understanding how to denote our distance correctly - as well as understanding if and how we can dissolve our buffer into a single record.
 
-To do this, we would investigate the documentation of the function `st_buffer()` to find out what additional parameters it takes - and how. What we can find out is that we need to (of course!) provide a distance for our buffer - **but** whatever figure we supply, this will be interpreted within the **units** of the CRS we are using. In our case, we are using *British National Grid* and, luckily for us, the units of the CRS is metres - which makes are life significantly easier when calculating these buffers. For other CRS, many use a base unit of an Arc Degree, e.g. WGS84. In this case, you technically have two options: 1) reproject your data into a CRS that uses metres as its base unit OR 2) convert your distance into an Arc Degree measurement. **Always choose 1).**
+To do this, we would investigate the documentation of the function `st_buffer()` to find out what additional parameters it takes - and how. What we can find out is that we need to (of course!) provide a distance for our buffer - **but** whatever figure we supply, this will be interpreted within the **units** of the CRS we are using. In our case, we are using *British National Grid* and, luckily for us, the units of the CRS is metres - which makes are life significantly easier when calculating these buffers. For other CRS, many use a base unit of an Arc Degree, e.g. WGS84. In this case, you technically have two options: 1) reproject your data into a CRS that uses metres as its base unit OR 2) convert your distance into an Arc Degree measurement. **Always choose Option 1.**
 
-Fortunately none of this is our concern - we know we can simply input the figure or **400** into our buffer and this will generate a buffer of 400m. 
+Fortunately none of this is our concern - we know we can simply input the figure of 400 into our buffer and this will generate a buffer of 400m. 
 
-```{r buffer-buffer}
+```{r buffer-buffer, cache=TRUE}
 # greenspace buffer
 gs_buffer_400m <- st_buffer(large_london_greenspace, dist=400)
 ```
 
 As our final bit of processing with our greenspace buffer, we want to dissolve the whole buffer into a single record. To do this, we'll replicate the code used for our London ward dissolve, creating a an area value for our buffer records in the process to be used within the summarisation - and then result in a new gs_buffer_400m_single variable:
 
-```{r dissolve-that-buffer}
+```{r dissolve-that-buffer, cache=TRUE}
 # dissolve greenspace buffer
 gs_buffer_400m_single <- gs_buffer_400m %>% summarise(area = sum(st_area(gs_buffer_400m)))
 
@@ -236,12 +236,12 @@ tm_shape(gs_buffer_400m_single) +
   tm_polygons()
 ```
 
-## Analysis
+## Greenspace in London
 Great, we are now ready to bring our two datasets together reaady for anlaysis - and to do so, we'll use subsetting as well as the `st_intersects()` function, although with this one, we'll use it in two different ways!
 
 Our first task is to identify those schools that have access to greenspace - and extract them to create a new variable for use within our final point-in-polygon count (i.e. how many schools within each ward has access to greenspace). As we know, we can subset our london_schools dataset by our greenspace buffer quite easily using the subset approach:
 
-```{r schools-with-that-green}
+```{r schools-with-that-green, cache=TRUE}
 # schools within 400m of greenspace
 london_schools_gs <- london_schools_prj_ss[gs_buffer_400m_single,]
 ```
@@ -250,14 +250,14 @@ Our *london_schools_gs* variable has been subsetted correctly if we end up with 
 
 The `st_intersects()` function is really useful as its output is a simple `TRUE` or `FALSE` statement - does this record intersect with the greenspace buffer? This result is what will be stored in our new column as a TRUE or FALSE response and what we can use to map our schools and their greenspace access:
 
-```{r boolean-greenspace-schools}
+```{r boolean-greenspace-schools, cache=TRUE}
 # greenspace access
 london_schools_prj_ss$gs_access <- st_intersects(london_schools_prj_ss, gs_buffer_400m_single, sparse=FALSE)
 ```
 
 We could go ahead and recode this to create a 1 or 0, or YES or NO after processing, but for now we'll leave it as `TRUE` or `FALSE`. We can go head and now visualise our schools based on this column, to see if they have access (`TRUE`) or do not have access (`FALSE`) to greenspace. To do this, we'll use the `tmap` library again:
 
-```{r show-that-space}
+```{r show-that-space, cache=TRUE}
 # inspect
 tm_shape(london_schools_prj_ss) + 
   tm_dots(col='gs_access', palette='BuGn')
@@ -269,7 +269,7 @@ To do so in R and with `sf`, it is one line of code - which at first look does n
 
 This is a really simple way of doing a PIP calculation - and makes it easy for us to store the output of the function and its `lengths` (and thus the count) directly as a column within our `london_wards` dataset, as so:
 
-```{r point-in-polygon-schools}
+```{r point-in-polygon-schools, cache=TRUE}
 # total number of schools in each ward 
 london_wards$total_schools <- lengths(st_intersects(london_wards, london_schools_prj_ss))
 
@@ -286,7 +286,7 @@ london_wards$gs_rate <- (london_wards$gs_schools/london_wards$total_schools)*100
 
 And that's it! We now have our greenspace rate for our wards, which we can now again map:
 
-```{r plot-the-final-result-yall}
+```{r plot-the-final-result-yall, cache=TRUE}
 # inspect
 tm_shape(london_wards) + 
   tm_polygons(col='gs_rate', palette='Greens')
