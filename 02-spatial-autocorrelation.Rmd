@@ -86,7 +86,7 @@ Let's call every output area with a centroid 500m or less away from the centroid
 - we set the maximum distance of calling an OA centroid a neigbour to "500" (with parameter `maxdist`)
 - we return a sparse matrix that tells us whether each OA is a neighbour or not (with parameter `sparse`)
 
-``` {r 04-d-euclidean-distance-neighbour, warning=FALSE, cache=TRUE}
+``` {r 04-d-euclidean-distance-neighbour, warning=FALSE, cache=FALSE}
 # assign our chosen OA to a variable 
 chosen_oa <- 'E00004174'
 
@@ -123,7 +123,7 @@ The next way of calculating neighbours takes into account the actual shape and l
 
 We can create two functions that check whether any polygons share boundaries or overlap one another, and then also check by how much. These new functions are based on the `st_relate()` function. The different cases of these are known as queen, and rook. These describe the relations in a similar way to the possible chess board movements of these pieces. 
 
-``` {r 04-e-shared-boundary-neighbour-function-creation, cache=TRUE}
+``` {r 04-e-shared-boundary-neighbour-function-creation, cache=FALSE}
 # for rook case
 st_rook = function(a, b = a) st_relate(a, b, pattern = 'F***1****')
 
@@ -133,7 +133,7 @@ st_queen <- function(a, b = a) st_relate(a, b, pattern = 'F***T****')
 
 Now that we've created the functions lets try them out.
 
-``` {r 04-f-shared-boundary-neighbour-example, cache=TRUE}
+``` {r 04-f-shared-boundary-neighbour-example, cache=FALSE}
 # identify neighbours
 chosen_oa_neighbours <- st_rook(st_geometry(camden_oas[camden_oas$OA11CD==chosen_oa,]), 
                                 st_geometry(camden_oas))
@@ -169,7 +169,7 @@ Now that we have found the different ways of finding neighbours we can consider 
 
 But before we start that let's get into the data we are going to use! We'll be using personal theft data from around Camden. Our neighbourhood analysis of spatial autocorrelation should allow us to quantify the pattern of distribution of reported theft from persons in Camden in 2019.
 
-``` {r 04-g-loading-in-crime-data, cache=TRUE}
+``` {r 04-g-loading-in-crime-data, cache=FALSE}
 # load theft data
 camden_theft <- fread('data/crime/2019_camden_theft_from_person.csv')
 
@@ -185,7 +185,7 @@ tm_shape(camden_theft) +
 
 This is point data, but we are interested in the polygons and how this data relates to the administrative boundaries it is within. Let's count the number of thefts in each OA. This is a spatial operation that is often called "point in polygon". As we are just counting the number of occurrences in each polygon it is quite easy. In the future you may often want to aggregate over points for an area, or in reverse assign values from the polygon to the points.
 
-``` {r 04-h-point-in-polygon, cache=TRUE}
+``` {r 04-h-point-in-polygon, cache=FALSE}
 # thefts in camden
 camden_oas$n_thefts <- lengths(st_intersects(camden_oas, camden_theft))
 
@@ -196,7 +196,7 @@ tm_shape(camden_oas) +
 
 You can see our map isskewed by central London, meaning that the results in central London (the south of Camden) are so much larger than those in the north that it makes it harder to see the smaller differences between other areas. We'll take the square root of the number of thefts to remedy this.
 
-``` {r 04-square-root, cache=TRUE}
+``` {r 04-square-root, cache=FALSE}
 # square root of thefts
 camden_oas$sqrt_n_thefts <- sqrt(camden_oas$n_thefts)
 
@@ -212,7 +212,7 @@ With a [Global Moran's I](https://en.wikipedia.org/wiki/Moran%27s_I) we can test
 
 To calculate the Global Moran's I you need an adjacency matrix that contains the information of whether or not an OA is next to another. For an even more nuanced view you can include distance, or a distance weighting in the matrix rather than just the TRUE or FALSE, to take into account the strength of the neighbourhoodness. Because of the way Moran's I functions in R it is necessary to use the `sp` and `spdep` libraries. So load them in.
 
-``` {r 04-j-load-sp-spdep, warning=FALSE, cache=TRUE}
+``` {r 04-j-load-sp-spdep, warning=FALSE, cache=FALSE}
 # libraries
 library(sp)
 library(spdep)
@@ -220,7 +220,7 @@ library(spdep)
 
 As you will see these methods and functions have quite esoteric and complicated syntax. Some of the operations they will do will be similar to the examples shown earlier, but the way they assign and store variables makes it much quicker to run complex spatial operations.
 
-``` {r 04-k-converting-to-sp, cache=TRUE}
+``` {r 04-k-converting-to-sp, cache=FALSE}
 # inspect
 class(camden_oas)
 
@@ -233,7 +233,7 @@ class(camden_oas_sp)
 
 Now we can make the esoteric and timesaving "nb" object in which we store for each OA which other OAs are considered to be neighbours.
 
-``` {r 04-l-nb-time, cache=TRUE}
+``` {r 04-l-nb-time, cache=FALSE}
 # create an nb object
 camden_oas_nb <- poly2nb(camden_oas_sp, row.names=camden_oas_sp$OA11CD)
 
@@ -246,7 +246,7 @@ str(camden_oas_nb,list.len=10)
 
 Next, we need to assign weights to each neighbouring polygon. In our case, each neighbouring polygon will be assigned equal weight with `style='W'`. After this, we can calculate a value for the Global Moran's I. 
 
-``` {r 04-n-list-weights-object, cache=TRUE}
+``` {r 04-n-list-weights-object, cache=FALSE}
 # create the list weights object
 nb_weights_list <- nb2listw(camden_oas_nb, style='W')
 
@@ -262,7 +262,7 @@ mi_value
 
 The Global Moran's I seems to indicate that there is indeed some spatial autocorrelation in our data, however, this is just a quick way to check the score. To do so properly we need to compare our score a randomly distributed version of the variables. We can do this by using something called a [Monte Carlo simulation](https://en.wikipedia.org/wiki/Monte_Carlo_method).
 
-``` {r 04-o-monte-carlo-moran, cache=TRUE}
+``` {r 04-o-monte-carlo-moran, cache=FALSE}
 # run a Monte Carlo simulation 599 times
 mc_model <- moran.mc(camden_oas_sp$n_thefts, nb_weights_list, nsim=599)
 
@@ -275,7 +275,7 @@ This model shows that our distribution of thefts differs significantly from a ra
 ## Local Moran's I
 With a measurement of local spatial autocorrelation we could find hotspots of theft that are surrounded by areas of much lower theft. According to the previous global statistic these are not randomly distributed pockets but would be outliers against the general trend of clusteredness! These could be areas that contain very specific locations, where interventions could be made that drastically reduce the rate of crime rather than other areas where there is a high level of ambient crime.
 
-``` {r 04-p-local-spatial-autocorrelation, cache=TRUE}
+``` {r 04-p-local-spatial-autocorrelation, cache=FALSE}
 # create an nb object
 camden_oas_nb <- poly2nb(camden_oas_sp, row.names=camden_oas_sp$OA11CD)
 
@@ -288,28 +288,28 @@ local_moran_camden_oa_theft <- localmoran(camden_oas_sp$n_thefts, nb_weights_lis
 
 To properly utilise these local statistics and make an intuitively useful map, we need to combine them with our crime count variable. Because of the way the new variable will be calculated, we first need to rescale our variable so that the mean is 0. 
 
-``` {r 04-q-rescale, cache=TRUE}
+``` {r 04-q-rescale, cache=FALSE}
 # rescale
 camden_oas_sp$scale_n_thefts <- scale(camden_oas_sp$n_thefts)
 ```
 
 To compare this rescaled value against its neighbours, we subseuqnetly need to create a new column that carries information about the neighbours. This is called a spatial lag function. The "lag" just refers to the fact you are comparing one observation against another, this can also be used between timed observations. In this case, the "lag" we are looking at is between neighbours.
 
-``` {r 04-r-spatial-lag, cache=TRUE}
+``` {r 04-r-spatial-lag, cache=FALSE}
 # create a spatial lag variable 
 camden_oas_sp$lag_scale_n_thefts <- lag.listw(nb_weights_list, camden_oas_sp$scale_n_thefts)
 ```
 
 Now we have used `sp` for all it is worth it's time to head back to the safety of `sf()` before exploring any forms of more localised patterns.
 
-``` {r 04-s-back-to-sf, cache=TRUE}
+``` {r 04-s-back-to-sf, cache=FALSE}
 # convert to sf
 camden_oas_moran_stats <- st_as_sf(camden_oas_sp)
 ```
 
 To make a human readable version of the map we will generate some labels for our findings from the [Local Moran's I](https://en.wikipedia.org/wiki/Indicators_of_spatial_association) stats. This process calculates what the value of each polygon is compared to its neighbours and works out if they are similar or dissimilar and in which way, then gives them a text label to describe the relationship.
 
-``` {r 04-t-conditional-labelling, cache=TRUE}
+``` {r 04-t-conditional-labelling, cache=FALSE}
 # set a significance value
 sig_level <- 0.1
 
@@ -351,7 +351,7 @@ camden_oas_moran_stats$quad_non_sig <- ifelse(camden_oas_moran_stats$scale_n_the
 
 To understand how this is working we can look at the data non-spatially. As we rescaled the data, our axes should split the data neatly into their different area vs spatial lag relationship categories. Let's make the scatterplot using the scaled number of thefts for the areas in the x axis and their spatially lagged results in the y axis.
 
-``` {r 04-v-plotting-quadrants-scatter, cache=TRUE}
+``` {r 04-v-plotting-quadrants-scatter, cache=FALSE}
 # plot the results without the statistical significance
 ggplot(camden_oas_moran_stats, aes(x = scale_n_thefts, 
                                    y = lag_scale_n_thefts, 
@@ -377,7 +377,7 @@ ggplot(camden_oas_moran_stats, aes(x = scale_n_thefts,
 
 Now let's see how they are arranged spatially.
 
-``` {r 04-s-mapping-local-moran, cache=TRUE}
+``` {r 04-s-mapping-local-moran, cache=FALSE}
 # map all of the results here
 tm_shape(camden_oas_moran_stats) +
   tm_fill(col = 'quad_non_sig')

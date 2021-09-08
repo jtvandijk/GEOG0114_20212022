@@ -63,6 +63,7 @@
 <script src="libs/leaflet-binding-2.0.4.1/leaflet.js"></script>
 <script src="libs/leaflet-providers-1.9.0/leaflet-providers_1.9.0.js"></script>
 <script src="libs/leaflet-providers-plugin-2.0.4.1/leaflet-providers-plugin.js"></script>
+<link href="libs/vembedr-0.1.4/css/vembedr.css" rel="stylesheet" />
 
 
 <style type="text/css">
@@ -187,7 +188,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="2.10" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#local-morans-i"><i class="fa fa-check"></i><b>2.10</b> Local Moran’s I</a></li>
 <li class="chapter" data-level="2.11" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#attributions_w04"><i class="fa fa-check"></i><b>2.11</b> Attributions</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html"><i class="fa fa-check"></i><b>3</b> Point pattern analysis</a></li>
+<li class="chapter" data-level="3" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html"><i class="fa fa-check"></i><b>3</b> Point pattern analysis</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#this_week_w07"><i class="fa fa-check"></i><b>3.1</b> This week</a></li>
+<li class="chapter" data-level="3.2" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#case_study_w07"><i class="fa fa-check"></i><b>3.2</b> Case study</a></li>
+<li class="chapter" data-level="3.3" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#getting_started_w07"><i class="fa fa-check"></i><b>3.3</b> Getting started</a></li>
+<li class="chapter" data-level="3.4" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#distance-based-methods"><i class="fa fa-check"></i><b>3.4</b> Distance-based methods</a></li>
+<li class="chapter" data-level="3.5" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#density-based-methods"><i class="fa fa-check"></i><b>3.5</b> Density-based methods</a></li>
+<li class="chapter" data-level="3.6" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#point-pattern-analysis-in-practice"><i class="fa fa-check"></i><b>3.6</b> Point pattern analysis in practice</a>
+<ul>
+<li class="chapter" data-level="3.6.1" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#example-uber"><i class="fa fa-check"></i><b>3.6.1</b> Example: Uber</a></li>
+<li class="chapter" data-level="3.6.2" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#example-gbnames"><i class="fa fa-check"></i><b>3.6.2</b> Example: GBNames</a></li>
+</ul></li>
+<li class="chapter" data-level="3.7" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#assignment_w07"><i class="fa fa-check"></i><b>3.7</b> Assignment</a></li>
+<li class="chapter" data-level="3.8" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html#attributions_w07"><i class="fa fa-check"></i><b>3.8</b> Attributions</a></li>
+</ul></li>
 <li class="chapter" data-level="4" data-path="geodemographics.html"><a href="geodemographics.html"><i class="fa fa-check"></i><b>4</b> Geodemographics</a></li>
 </ul>
 
@@ -211,7 +226,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="this_week_w04" class="section level2" number="2.1">
 <h2><span class="header-section-number">2.1</span> This week</h2>
 <p>This week, we focus on the first of two key properties of spatial data: spatial dependence. Spatial dependence is the idea that the observed value of a variable in one location is often dependent (to some degree) on the observed value of the same value in a nearby location. For spatial analysis, this dependence can be assessed and measured statistically by considering the level of spatial autocorrelation between values of a specific variable, observed in either different locations or between pairs of variables observed at the same location. Spatial autocorrelation occurs when these values are not independent of one another and instead cluster together across geographic space.</p>
-<p>A critical first step of spatial autocorrelation is to define the criteria under which a spatial unit (e.g. an areal or point unit) can be understood as a “neighbor” to another unit. As highlighted in previous weeks, spatial properties can often take on several meanings, and as a result, have an impact on the validity and accuracy of spatial analysis. This multiplicity also can be applied to the concept of spatial neighbours which can be defined through adjacency, contiguity or distance-based measures. As the specification of these criteria can impact the results, the definition followed therefore need to be grounded in particular theory that aims to represent the process and variable investigated.</p>
+<p>A critical first step of spatial autocorrelation is to define the criteria under which a spatial unit (e.g. an areal or point unit) can be understood as a “neighbour” to another unit. As highlighted in previous weeks, spatial properties can often take on several meanings, and as a result, have an impact on the validity and accuracy of spatial analysis. This multiplicity also can be applied to the concept of spatial neighbours which can be defined through adjacency, contiguity or distance-based measures. As the specification of these criteria can impact the results, the definition followed therefore need to be grounded in particular theory that aims to represent the process and variable investigated.</p>
 </div>
 <div id="case_study_w04" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Case study</h2>
@@ -449,7 +464,7 @@ Because the tolerance of the shared boundaries in the <code>st_rook()</code> pat
 ##  - attr(*, &quot;call&quot;)= language poly2nb(pl = camden_oas_sp, row.names = camden_oas_sp$OA11CD)
 ##  - attr(*, &quot;type&quot;)= chr &quot;queen&quot;
 ##  - attr(*, &quot;sym&quot;)= logi TRUE</code></pre>
-<p>Next, we need to assign weights to each neighboring polygon. In our case, each neighboring polygon will be assigned equal weight with <code>style='W'</code>. After this, we can calculate a value for the Global Moran’s I.</p>
+<p>Next, we need to assign weights to each neighbouring polygon. In our case, each neighbouring polygon will be assigned equal weight with <code>style='W'</code>. After this, we can calculate a value for the Global Moran’s I.</p>
 <div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="spatial-autocorrelation.html#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create the list weights object</span></span>
 <span id="cb61-2"><a href="spatial-autocorrelation.html#cb61-2" aria-hidden="true" tabindex="-1"></a>nb_weights_list <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(camden_oas_nb, <span class="at">style=</span><span class="st">&#39;W&#39;</span>)</span>
 <span id="cb61-3"><a href="spatial-autocorrelation.html#cb61-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -542,7 +557,7 @@ Because the tolerance of the shared boundaries in the <code>st_rook()</code> pat
 <span id="cb71-36"><a href="spatial-autocorrelation.html#cb71-36" aria-hidden="true" tabindex="-1"></a>                                              camden_oas_moran_stats<span class="sc">$</span>lag_scale_n_thefts <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
 <span id="cb71-37"><a href="spatial-autocorrelation.html#cb71-37" aria-hidden="true" tabindex="-1"></a>                                              <span class="st">&#39;low-high&#39;</span>,<span class="cn">NA</span>))))</span></code></pre></div>
 <p>To understand how this is working we can look at the data non-spatially. As we rescaled the data, our axes should split the data neatly into their different area vs spatial lag relationship categories. Let’s make the scatterplot using the scaled number of thefts for the areas in the x axis and their spatially lagged results in the y axis.</p>
-<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="spatial-autocorrelation.html#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the results without the satistical significance</span></span>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="spatial-autocorrelation.html#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the results without the statistical significance</span></span>
 <span id="cb72-2"><a href="spatial-autocorrelation.html#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(camden_oas_moran_stats, <span class="fu">aes</span>(<span class="at">x =</span> scale_n_thefts, </span>
 <span id="cb72-3"><a href="spatial-autocorrelation.html#cb72-3" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">y =</span> lag_scale_n_thefts, </span>
 <span id="cb72-4"><a href="spatial-autocorrelation.html#cb72-4" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">color =</span> quad_non_sig)) <span class="sc">+</span></span>
@@ -553,7 +568,7 @@ Because the tolerance of the shared boundaries in the <code>st_rook()</code> pat
 <span id="cb72-9"><a href="spatial-autocorrelation.html#cb72-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">colour=</span><span class="st">&#39;Relative to neighbours&#39;</span>) <span class="sc">+</span></span>
 <span id="cb72-10"><a href="spatial-autocorrelation.html#cb72-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code></pre></div>
 <p><img src="GEOG0114_files/figure-html/04-v-plotting-quadrants-scatter-1.png" width="672" /></p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="spatial-autocorrelation.html#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the results nnw with the satistical significance</span></span>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="spatial-autocorrelation.html#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the results with the statistical significance</span></span>
 <span id="cb73-2"><a href="spatial-autocorrelation.html#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(camden_oas_moran_stats, <span class="fu">aes</span>(<span class="at">x =</span> scale_n_thefts, </span>
 <span id="cb73-3"><a href="spatial-autocorrelation.html#cb73-3" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">y =</span> lag_scale_n_thefts, </span>
 <span id="cb73-4"><a href="spatial-autocorrelation.html#cb73-4" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">color =</span> quad_sig)) <span class="sc">+</span></span>
