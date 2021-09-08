@@ -207,7 +207,7 @@ Once we have our area column, we can now filter our dataset based on that column
 
 ```{r only-real-greenspace-pls, cache=TRUE}
 # filter large greenspaces
-large_london_greenspace <- london_greenspace %>% filter(area_m > set_units(50000, m^2))
+large_london_greenspace <- london_greenspace %>% filter(area_m > set_units(50000.0, m^2))
 ```
 
 We now can look at our final greenspace dataset against our london outline to see its final coverage:
@@ -272,7 +272,7 @@ tm_shape(london_schools_prj_ss) +
   tm_dots(col='gs_access', palette='BuGn')
 ```
 
-You'll be pleased to read that we are finally here - we are at the last stage of our processing and can finally create our rate of schools that have greenspace access, versus those that do not! To do this, we'll be counting the number of points in each of our polygons, i.e. the number of schools in each ward.
+You'll be pleased to read that we are finally here - we are at the last stage of our processing and can finally create the ward-level percentage of schools that have greenspace access, versus those that do not! To do this, we'll be counting the number of points in each of our polygons, i.e. the number of schools in each ward.
 
 To do so in R and with `sf`, it is one line of code - which at first look does not sound at all like it is completing a point-in-polygon calculation - but it does! To create a PIP count within `sf`, we use the `st_intersects()` function again - but instead of using the output of `TRUE` or `FALSE`, what we actually extract from our function is its `lengths` recording. The `lengths` part of this function records how many times a join feature (i.e. our schools) intersects with our main features (i.e. our wards). (Note here, we *do not* set the sparse function to `FALSE` but leave it as TRUE/its default by not entering the parameter). As a result, the length of this list is equal to the count of how many schools are within the polygon - i.e. a PIP calculation.
 
