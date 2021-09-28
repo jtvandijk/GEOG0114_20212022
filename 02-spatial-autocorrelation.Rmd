@@ -5,6 +5,12 @@ This week, we focus on the first of two key properties of spatial data: spatial 
 
 A critical first step of spatial autocorrelation is to define the criteria under which a spatial unit (e.g. an areal or point unit) can be understood as a "neighbour" to another unit. As highlighted in previous weeks, spatial properties can often take on several meanings, and as a result, have an impact on the validity and accuracy of spatial analysis. This multiplicity also can be applied to the concept of spatial neighbours which can be defined through adjacency, contiguity or distance-based measures. As the specification of these criteria can impact the results, the definition followed therefore need to be grounded in particular theory that aims to represent the process and variable investigated. 
 
+## Reading list {#reading_w04}
+- Gimond, M. 2021. Intro to GIS and spatial analysis. **Chapter 13**: Spatial autocorrelation. [[Link]](https://mgimond.github.io/Spatial/spatial-autocorrelation.html)
+- Longley, P. *et al.* 2015. Geographic Information Science & systems, **Chapter 2**: The Nature of Geographic Data. [[Link]](https://rl.talis.com/3/ucl/items/ea2386fb-19dc-460a-acba-bda3737546c2.html?lang=en-gb&login=1)
+- Longley, P. *et al.* 2015. Geographic Information Science & systems, **Chapter 13**: Spatial Analysis. [[Link]](https://rl.talis.com/3/ucl/items/fd38ec78-2bea-4165-aab3-0e9d9093db8e.html?lang=en-gb&login=1)
+- Radil, S. 2016. Spatial analysis of crime. In: Huebner, B. and Bynum, T. *The Handbook of Measurement Issues in Criminology and Criminal Justice*, Chapter 24, pp.536-554. [[Link]](https://doi.org/10.1002/9781118868799.ch24)
+
 ## Case study {#case_study_w04}
 This week looks at spatial dependence and autocorrelation in detail, focusing on the different methods of assessment. As part of this, we look at the multiple methods to defining spatial neighbours and their suitability of use across different spatial phenomena – and how this approach is used to generate spatial weights for use within these spatial autocorrelation methods as well as their potential to generate spatially-explicit variables. 
 

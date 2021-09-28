@@ -7,6 +7,13 @@ This week we will look at data rich environments and how we can use socio-demogr
 
 We will look at geodemographics by focusing on a geodemographic classification known as the [Internet User Classification](https://data.cdrc.ac.uk/dataset/internet-user-classification).
 
+## Reading list {#reading_w09}
+- Goodman, A. *et al.* 2011. Characterising socio-economic inequalities in exposure to air pollution: A comparison of socio-economic markers and scales of measurement. *Health & Place* 17(3), pp.767-774. [[Link]](https://doi.org/10.1016/j.healthplace.2011.02.002)
+- Longley, P. A. 2012. Geodemographics and the practices of geographic information science. *International Journal of Geographical Information Science* 26(12), pp.2227-2237. [[Link]](https://doi.org/10.1080/13658816.2012.719623)
+- Martin, D. *et al.* 2018. Origin-destination geodemographics for analysis of travel to work flows. *Computers, Environment and Urban Systems* 67, pp.68-79. [[Link]](https://doi.org/10.1016/j.compenvurbsys.2017.09.002)
+- Singleton, A., Alexiou, A. and Savani, R. 2020. Mapping the geodemographics of digital inequality in Great Britain: An integration of machine learning into small area estimation. *Computers, Environment and Urban Systems* 82, 101486. [[Link]](https://doi.org/10.1016/j.compenvurbsys.2020.101486)
+- Singleton, A. and Spielman, S. 2014. The past, present, and future of geodemographic research in the United States and United Kingdom. *The Professional Geographer* 66(4), pp.558-567. [[Link]](https://doi.org/10.1080/00330124.2013.848764)
+
 ## Case study {#case_study_w09}
 The [CDRC Internet User Classification](https://data.cdrc.ac.uk/dataset/internet-user-classification) (IUC) is a bespoke geodemographic classification that describes how people residing in different parts of Great Britain interact with the Internet. For every Lower Super Output Area (LSOA) in England and Wales and Data Zone (DZ) ([2011 Census Geographies](https://www.ons.gov.uk/methodology/geography/ukgeographies/censusgeography)), the IUC provides aggregate population estimates of Internet use ([Singleton *et al.* 2020](https://www.sciencedirect.com/science/article/pii/S0198971519307963)) and provides insights into the geography of the digital divide in the United Kingdom. 
 

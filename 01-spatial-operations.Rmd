@@ -3,6 +3,13 @@
 ## This week {#this_week_w03}
 Understanding spatial properties, relationships and how they are used within spatial operations are the building blocks to spatial data processing and analysis. This tutorial takes you through a simple approach to measuring greenspace access for schools in London, using geometric operations as the main methods for processing and analysing your data. You will construct a buffer dataset around our greenspace and determine whether nearby schools intersect with this buffer. We will first visualise our data as points to see if we can identify areas of high versus low access - and then aggregate the data to the ward level for potential further use within analysis with statistical data, such as census information.
 
+## Reading list {#reading_w03}
+- Gimond, M. 2021. Intro to GIS and spatial analysis. **Chapter 8**: Spatial operations and vector overlays. [[Link]](https://mgimond.github.io/Spatial/spatial-operations-and-vector-overlays.html)
+- Longley, P. *et al.* 2015. Geographic Information Science & systems, **Chapter 13**: Spatial Analysis. [[Link]](https://rl.talis.com/3/ucl/items/fd38ec78-2bea-4165-aab3-0e9d9093db8e.html?lang=en-gb&login=1)
+- Lovelace, R., Nowosad, J. and Muenchow, J. 2021. Geocomputation with R, **Chapter 4**: Spatial data operations. [[Link]](https://geocompr.robinlovelace.net/spatial-operations.html)
+- Lovelace, R., Nowosad, J. and Muenchow, J. 2021. Geocomputation with R, **Chapter 5**: Geometry operations. [[Link]](https://geocompr.robinlovelace.net/geometric-operations.html)
+- Bijnens, E. *et al.* 2020. Residential green space and child intelligence and behavior across urban, suburban, and rural areas in Belgium: A longitudinal birth cohort study of twins. *PLOS Medicine* 17(8), e1003213. [[Link]](https://doi.org/10.1371/journal.pmed.1003213)
+
 ## Case study {#case_study_w03}
 Recent research ([Bijnens *et al.* 2020](https://doi.org/10.1371/journal.pmed.1003213)) has shown that children brought up in proximity to greenspace have a higher IQ and fewer behavioral problems, irrespective of socio-economic background. In our analysis today, we will look to understand whether there are geographical patterns to schools that have high versus low access of greenspace and where a lack of greenspace needs to be addressed in London. Below, we can see where schools are located in London and get a general understanding of their proximity to large greenspace just through a simple navigation of the map. In this practical we will try to quantify these visual patterns we may observe and find out which schools are within **400 metres** of greenspace that is larger than 50,000 square meters. We then calculate for each ward the percentage of schools that have access to a large greenspace.
 
