@@ -1,7 +1,7 @@
 # Point pattern analysis
 
 ## This week {#this_week_w07}
-In our previous practicals, we have aggregated our point data into areal units, primarily using administrative geographies, to enable its easy comparison with other datasets provided at the same spatial scale, such as the census data used in the previous week, as well as to conduct spatial autocorrelation tests. However, when locations are precisely known, spatial point data can be used with a variety of spatial analytic techniques that go beyond the methods typically applied to areal data. The set of methods unique to point data are often referred to as point pattern analysis and geostatistics. Within point pattern analysis, we look to detect patterns across a set of locations, including measuring density, dispersion and homogeneity in our point structures. We will look at both distance-based methods, by employing Ripley's K function, as well as density-based methods, particularly Kernel Density Estimation.
+In our previous practicals, we have aggregated our point data into areal units, primarily using administrative geographies, to enable its easy comparison with other data sets provided at the same spatial scale, such as the census data used in the previous week, as well as to conduct spatial autocorrelation tests. However, when locations are precisely known, spatial point data can be used with a variety of spatial analytic techniques that go beyond the methods typically applied to areal data. The set of methods unique to point data are often referred to as point pattern analysis and geostatistics. Within point pattern analysis, we look to detect patterns across a set of locations, including measuring density, dispersion and homogeneity in our point structures. We will look at both distance-based methods, by employing Ripley's K function, as well as density-based methods, particularly Kernel Density Estimation.
 
 ## Reading list {#reading_w07}
 - Cheshire, J. and Longley, P. A. 2011. Identifying spatial concentrations of surnames. *International Journal of Geographical Information Science* 26(2), pp.309-325. [[Link]](https://doi.org/10.1080/13658816.2011.591291)
@@ -63,7 +63,7 @@ tm_shape(crime_points) +
   tm_dots()
 ```
 
-Where we are now somehow familiar with the `sf` and `sp` packages, the `spatstat` package expects point data to be in yet another format: `ppp`. An object of the class `ppp` represents a two-dimensional point dataset within a pre-defined area, the window of observation. Because `spatstat` predates `sf` we do need to take several steps to transform our simple features object to a `ppp` object.
+Where we are now somehow familiar with the `sf` and `sp` packages, the `spatstat` package expects point data to be in yet another format: `ppp`. An object of the class `ppp` represents a two-dimensional point data set within a pre-defined area, the window of observation. Because `spatstat` predates `sf` we do need to take several steps to transform our simple features object to a `ppp` object.
 
 <div class="note">
 **Note**<br/>
@@ -149,7 +149,7 @@ For point patterns that are highly clusters one would expect the average distanc
 Rather than to look at the average distances of different orders neighbours, we can also look at the distance between a point and 'all distances' to other points and compare this to a point pattern that is generated in a random manner; i.e. compare our point distribution to a theoretical distribution that has been generated in a spatial random manner. This can be done with **Ripley's K** function. Ripley's K- function essentially summarises the distance between points for all distances using radial distance bands. The calculation is relatively straightforward:
 
 1. For point **event A**, count the number of points inside a buffer (radius) of a certain size. Then count the number of points inside a slightly larger buffer (radius). 
-2. Repeat this for every point event in the dataset.
+2. Repeat this for every point event in the data set.
 3. Compute the average number of points in each buffer (radius) and divide this to the overall point density.
 4. Repeat this using points drawn from a Poisson random model for the same set of buffers.
 5. Compare the observed distribution with the distribution with the Poisson distribution.
@@ -158,7 +158,7 @@ We can conduct a Ripley’s K test on our data very simply with the spatstat pac
 
 <div class ="note">
 **Note**<br/>
-Be careful with running Ripley's K on large datasets as the function is essentially a series of nested loops, meaning that calculation time will increase exponentially with an increasing number of points.
+Be careful with running Ripley's K on large data sets as the function is essentially a series of nested loops, meaning that calculation time will increase exponentially with an increasing number of points.
 </div>
 
 ```{r 06-ripley-and-his-k, warnings=FALSE, message=FALSE}
@@ -182,7 +182,7 @@ crime_quadrat <- quadratcount(crime_ppp_jitter,nx=15,ny=15)
 plot(crime_quadrat)
 ```
 
-As we want to know whether or not there is any kind of spatial pattern present in our bicycle theft data, we need to look at our data and ask again whether the pattern is generated in a random manner; i.e. whether the distribution of points in our study area differs from **complete spatial randomness** (CSR) or whether there are some clusters present. Looking at our quadrat analysis, and with the results of our Ripley's K in the back of our minds, it is already quite clear that some quadrats have higher counts than others, however, we can once again generate a point dataset that adheres to the principles of complete spatial randomness and compare it to our dataset. We can do that again using a *Poisson point process*.
+As we want to know whether or not there is any kind of spatial pattern present in our bicycle theft data, we need to look at our data and ask again whether the pattern is generated in a random manner; i.e. whether the distribution of points in our study area differs from **complete spatial randomness** (CSR) or whether there are some clusters present. Looking at our quadrat analysis, and with the results of our Ripley's K in the back of our minds, it is already quite clear that some quadrats have higher counts than others, however, we can once again generate a point data set that adheres to the principles of complete spatial randomness and compare it to our data set. We can do that again using a *Poisson point process*.
 
 ```{r 06-random-points-poisson, warnings=FALSE, message=FALSE}
 # create and plot a completely spatially random point pattern of the same size as our bicycle theft data
@@ -234,7 +234,7 @@ For now, however, no matter which kernel or which bandwidth (within reason, of c
 Now we have an understanding on what constitutes point pattern analysis and which methods one can employ, we will move to some more practical examples of point pattern analysis as point data come in many shapes and forms.
 
 ### Example: Uber
-A great example of a company having to deal with massive spatial point datasets is [Uber](https://www.uber.com/gb/en/). In fact, in order to analyse, visualise and explore their spatial point data, Uber developed a grid-based system called **H3** (is it already reminding you of our quadrat count somehow?!). Watch the YouTube video to see how Uber leverages hierachically nested hexagons for geospatial indexing and why this is so important in their use case.
+A great example of a company having to deal with massive spatial point data sets is [Uber](https://www.uber.com/gb/en/). In fact, in order to analyse, visualise and explore their spatial point data, Uber developed a grid-based system called **H3** (is it already reminding you of our quadrat count somehow?!). Watch the YouTube video to see how Uber leverages hierachically nested hexagons for geospatial indexing and why this is so important in their use case.
 
 ```{r 05-uber-h3-index,echo=FALSE}
 library(vembedr)
@@ -247,7 +247,7 @@ Another example of point pattern analysis in practice, is Consumer Data Research
 Try to execute some surname searches and see if you can find any interesting patterns or differences between surnames. Also, try to understand what the additional Consumer Statistics mean - these are already a small bridge to the material of W09 which will involve a closer look at geodemographics!
 
 ## Assignment {#assignment_w07}
-Now you have seen the GBNames website and you know how to execute a Kernel Density Estimation, it is time you try it yourself. Below are three datasets with the locations of the bearers of three different surnames (Longley, Wilkins, Van Dijk). Each dataset contains a surname, a x-coordinate and a y-coordinate (both already projected in [EPSG 27700](https://epsg.io/27700)). Your task is to analyse these three surname distributions using Kernel Density Estimation. 
+Now you have seen the GBNames website and you know how to execute a Kernel Density Estimation, it is time you try it yourself. Below are three data sets with the locations of the bearers of three different surnames (Longley, Wilkins, Van Dijk). Each data set contains a surname, a x-coordinate and a y-coordinate (both already projected in [EPSG 27700](https://epsg.io/27700)). Your task is to analyse these three surname distributions using Kernel Density Estimation. 
 
 <div class ="note">
 **Note**<br/>

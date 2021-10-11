@@ -56,7 +56,7 @@ To follow along with the code as it is and not edit the file paths there should 
 | :------                                              | :------        | :------ |
 | Theft in Camden                                      |`shp`, `csv`    | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/camden_theft.zip) |
 
-## Loading our datasets {#loading_data_w04}
+## Loading our data sets {#loading_data_w04}
 Now we have the data in the correct folders, we can load and plot the shape data.
 
 ```{r load-those-shapes-for-camden, echo=TRUE}
@@ -276,7 +276,7 @@ mc_model <- moran.mc(camden_oas_sp$n_thefts, nb_weights_list, nsim=599)
 mc_model
 ```
 
-This model shows that our distribution of thefts differs significantly from a random distribution. As such, we can conclude that there is significant spatial autocorrelation in our theft dataset.
+This model shows that our distribution of thefts differs significantly from a random distribution. As such, we can conclude that there is significant spatial autocorrelation in our theft data set.
 
 ## Local Moran's I
 With a measurement of local spatial autocorrelation we could find hotspots of theft that are surrounded by areas of much lower theft. According to the previous global statistic these are not randomly distributed pockets but would be outliers against the general trend of clusteredness! These could be areas that contain very specific locations, where interventions could be made that drastically reduce the rate of crime rather than other areas where there is a high level of ambient crime.
@@ -394,6 +394,268 @@ tm_shape(camden_oas_moran_stats) +
 ```
 
 As our data are so spatially clustered we can't see any outlier places (once we have ignored the non-significant results). This suggests that the pattern of theft from persons is not highly concentrated in very small areas or particular Output Areas, and instead is spread on a larger scale than we have used here. To go further than we have today it would be possible to run the exact same code but using a larger scale, perhaps LSOA, or Ward, and compare how this changes the Moran's I statistics globally and locally. Or, to gain statistical significance in looking at the difference between areas getting more data perhaps over a longer timescale, where there are less areas with 0 thefts.
+
+## Tidy data
+In this **bonus** part of this week's session we will start by creating a **tidy data set** using some data from the [UK 2011 Census of Population](https://www.ons.gov.uk/census/2011census). As explained in the lecture, tidy data refers to a consistent way to structure your data in R.  Tidy data, as formalised by [R Wizard Hadley Wickham](http://hadley.nz/) in his contribution to the [Journal of Statistical Software](http://www.jstatsoft.org/v59/i10/paper) is not only very much at the core of the `tidyverse` R package, but also of general importance when organising your data. 
+
+You can represent the same underlying data in multiple ways. The example below, taken from the the `tidyverse` package and described in the [R for Data Science](https://r4ds.had.co.nz/tidy-data.html) book, shows that the same data can organised in four different ways. 
+
+```{r 04-loading-tidyverse, warnings=FALSE, message=FALSE}
+# load the tidyverse 
+library(tidyverse)
+```
+
+Table **1**:
+```{r 04-tidyverse-table1, warnings=FALSE, message=FALSE}
+table1
+```
+
+Table **2**:
+```{r 04-tidyverse-table2, warnings=FALSE, message=FALSE}
+table2
+```
+
+Table **3**:
+```{r 04-tidyverse-table3, warnings=FALSE, message=FALSE}
+table3
+```
+
+Table **4a**:
+```{r 04-tidyverse-table4a, warnings=FALSE, message=FALSE}
+table4a
+```
+
+Table **4b**:
+```{r 04-tidyverse-table4b, warnings=FALSE, message=FALSE}
+table4b
+```
+
+None of these representations are wrong per se, however, not are equally easy to use. Only Table **1** can be considered as tidy data because it is the only table that adheres to the three rules that make a data set tidy:
+
+1. Each variable must have its own column.
+2. Each observation must have its own row.
+3. Each value must have its own cell.
+
+```{r 04-figure-hadley-wickham, echo=FALSE, fig.align='center', fig.cap='A visual representation of tidy data by [Hadley Wickham](https://r4ds.had.co.nz/tidy-data.html).'}
+knitr::include_graphics('images/week04/04_a_tidy_data.png')
+```
+
+Fortunately, there are some functions in the `tidyr` and `dplyr` packages, both part of the `tidyverse` that will help us cleaning and preparing our data sets to create a **tidy data set**. The most important and useful functions are:
+
+| Package   | Function          | Use to |
+| :------   | :------           | :------ |
+| dplyr	    | select            | select columns |
+| dplyr	    | filter            | select rows |
+| dplyr	    | mutate            | transform or recode variables |
+| dplyr	    | summarise         | summarise data |
+| dplyr	    | group by          | group data into subgropus for further processing |
+| tidyr	    | pivot_longer      | convert data from wide format to long format |
+| tidyr	    | pivot_wider       | convert long format data set to wide format |
+
+<div class="note">
+**Note**<br/>
+Remember that when you encounter a function in a piece of R code that you have not seen before and you are wondering what it does that you can get access the documentation through `?name_of_function`, e.g. `?pivot_longer`. For almost any R package, the documentation contains a list of arguments that the function takes, in which format the functions expects these arguments, as well as a set of usage examples.
+</div>
+
+Now we know what constitute **tidy data**, we can put this into practice with an example using some data from the [Office for National Statistics](https://www.ons.gov.uk/). Let's say we are requested to analyse some data on the ethnic background of the UK population, for instance, because we want to get some insights into the relationship between [COVID-19 and ethnic background](https://www.theguardian.com/world/2020/oct/09/bame-groups-hit-hard-again-covid-second-wave-grips-uk-nations). Our assignment is to calculate the relative proportions of each ethnic group within the administrative geography of the [Middle layer Super Output Area (MSOA)](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/middlesuperoutputareamidyearpopulationestimates). In order to do this, we have access to a file that contains data on ethnicity by age group at the MSOA-level of every person in the 2011 UK Census who is 16 year or older. Download the file to your own computer and set up your data directory as usual. 
+
+<div class="note">
+**Note**<br/>
+Make sure that after downloading you first unzip the data, for instance, using [7-Zip](https://www.7-zip.org/) on Windows or using [The Unarchiver](https://theunarchiver.com/) on Mac OS.
+</div>
+
+#### File download {-}
+| File                                                 | Type           | Link |
+| :------                                              | :------        | :------ |
+| Ethnicity by age group 2011 Census of Population      | `csv`          | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/msoa_eth2011_ew_16plus.zip) |
+
+We start by making sure our `tidyverse` is loaded into R and using the `read_csv()` function to read our `csv` file.
+
+```{r 04-reading-data, message=FALSE, warnings=FALSE}
+# load the tidyverse 
+library(tidyverse)
+
+# read data into dataframe
+df <- read_csv('data/population/msoa_eth2011_ew_16plus.csv')
+  
+# inspect the dataframe: number of columns
+ncol(df)
+
+# inspect the dataframe: number of rows
+nrow(df)
+
+# inspect the dataframe: sneak peak
+print(df, n_extra=2)
+```
+
+Because the data are split out over multiple columns, it is clear that the data are not directly suitable to establish the proportion of each ethnic group within the population of each MSOA. Let's inspect the names of the columns to get a better idea of the structure of our data set.
+
+```{r 04-setting-max-print, warnings=FALSE, message=FALSE, echo=FALSE}
+# settings
+options(max.print = 30)
+```
+
+```{r 04-inspecting-column-names, warnings=FALSE, message=FALSE}
+# inspect the dataframe: column names
+names(df)
+```
+
+The column names are all awfully long and it looks like the data have been split out into age groups. Further to this, the data contain within group total counts: *all categories*, *white total*, *mixed/multiple ethnic group total*, and so on. 
+
+<div class="note">
+**Note**<br/>
+You can also try using `View(df)` or use any other form of spreadsheet software (e.g. Microsoft Excel) to **browse** through the data set to get a better idea of what is happening and get a better idea of the structure of the data. You first will need to understand the structure of your data set before you can start reorganising your data set.
+</div>
+
+Although the data is messy and we will need to reorganise our data set, it does look there is some form of structure present that we can exploit: the various columns with population counts for each ethnic group are repeated for each of the different age groups. This means that we can go through the data frame in steps of equal size to select the data we want: starting from column 2 (column 1 only contains the reference to the administrative geography) we want to select all 24 columns of data for that particular age group. We can create a `for` loop that does exactly that:
+
+```{r 04-creating-loop, warnings=FALSE, message=FALSE, cache=TRUE}
+# loop through the columns of our data set
+for (column in seq(2,ncol(df),24)) {
+    
+  # index number of start column of age group
+  start <- column
+  
+  # index number of end column of age group
+  stop <- column + 23 
+  
+  # print results
+  print(c(start,stop))
+}
+```
+For each age group in our data, the printed values should **(!)** correspond with the index number of the start column of the age group and the index number of the end column of the age group, respectively. Let's do a sanity check.
+
+```{r 04-sanity-check-columns, warnings=FALSE, message=FALSE}
+# sanity check: age group 16-17 (start column)
+df[,2]
+
+# sanity check: age group 16-17 (end column)
+df[,25]
+
+# sanity check: age group 18-19 (start column)
+df[,26]
+
+# sanity check: age group 18-19 (end column)
+df[,49]
+```
+
+All seems to be correct and we have successfully identified our columns. This is great, however, we still cannot work with our data as everything is spread out over different columns. Let's fix this by manipulating the shape of our data by turning columns into rows.
+
+```{r 04-columns-to-rows-function, warnings=FALSE, message=FALSE}
+# create function
+columns_to_rows <- function(df, start, stop) {
+  
+  # columns we are interested in
+  col_sub <- c(1,start:stop)
+  
+  # subset the dataframe 
+  df_sub <- dplyr::select(df,col_sub)
+  
+  # pivot the columns in the dataframe, exclude the MSOA code column 
+  df_piv <- pivot_longer(df_sub,-msoa11cd)
+  
+  # rename columns
+  names(df_piv) <- c('msoa11cd','age_group','count')
+  return(df_piv)
+}
+
+# test
+columns_to_rows(df,2,25)
+```
+
+This looks much better. Now let's combine our loop with our newly created function to apply this to all of our data.
+
+```{r 04-reformat-dataframe, warnings=FALSE, message=FALSE, cache=TRUE}
+# create an empty list to store our result from the loop
+df_lst <- list()
+
+# loop through the columns of our data set
+for (column in seq(2,ncol(df),24)) {
+    
+  # index number of start column of age group
+  start <- column
+  
+  # index number of end column of age group
+  stop <- column + 23 
+  
+  # call our function and assign it to the list
+  df_lst[[length(df_lst)+1]] <- columns_to_rows(df,start=start,stop=stop)
+}
+
+# paste all elements from the list underneath one another
+# do.call executes the function 'rbind' for all elements in our list
+df_reformatted <- as_tibble(do.call(rbind,df_lst))
+
+# and the result
+df_reformatted
+```
+
+Now the data is in a much more manageable format, we can move on with preparing the data further. We will start by filtering out the columns (now rows!) that contain *all categories* and the *within group totals*. We will do this by cleverly filtering our data set on only a part of the text string that is contained in the *age_group* column of our dataframe using a [regular expression](https://en.wikipedia.org/wiki/Regular_expression). We further truncate the information that is contained in the *age_group* column to make all a little more readable.
+
+```{r 04-further-clean-dataframe, warnings=FALSE, message=FALSE, cache=TRUE}
+# filter rows
+# this can be a little slow because of the regular expression!
+df_reformatted <- filter(df_reformatted,!grepl('*All categories*',age_group))
+df_reformatted <- filter(df_reformatted,!grepl('*Total*',age_group))
+
+# create variable that flags the 85 and over category
+# this can be a little slow because of the regular expression!
+df_reformatted$g <- ifelse(grepl('85',as.character(df_reformatted$age_group)),1,0)
+
+# select information from character 41 (85 and over category) or from character 38
+df_reformatted <- mutate(df_reformatted,group = ifelse(g==0,substr(as.character(age_group),38,500),
+                                                            substr(as.character(age_group),41,500))) 
+
+# remove unnecessary columns
+df_reformatted <- dplyr::select(df_reformatted, -age_group, -g)
+```
+
+We are now really getting somewhere, although in order for our data to be tidy each variable must have its own column. We also want, within each ethnic group, to aggregate the individual values within each age group.
+
+```{r 04-pivot-table-aggregate, warnings=FALSE, message=FALSE, cache=TRUE}
+# pivot table and aggregate values
+df_clean <- pivot_wider(df_reformatted,names_from=group,values_from=count,values_fn=sum)
+
+# rename columns
+# names are assigned based on index values, so make sure that the current column names match the
+# order of the new colum names otherwise our whole analysis will be wrong!
+names(df_clean) <- c('msoa11cd','white_british','white_irish','white_traveller','white_other','mixed_white_black_caribbean',
+                     'mixed_white_black_african','mixed_white_asian','mixed_other','asian_indian','asian_pakistani',
+                     'asian_bangladeshi','asian_chinese','asian_other','black_african','black_caribbean','black_other',
+                     'other_arab','other_other')
+
+# tidy data
+df_clean
+```
+
+Finally. We now have a **tidy data set** that we can work with!
+
+### Assignment {#assignment_w04}
+Since we went through all the trouble of cleaning and creating this file, let us try and use the cleaned data set to create a table that, for each MSOA, contains the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population. It could look something like this:
+
+| msoa11cd          | white_british          | white_irish       | etc.        |
+| :------           | :------:               | :------:          | :------:    |
+| E02002562         | 0.74                   | 0.03              | ...         |
+| E02002560         | 0.32                   | 0.32              | ...         |
+
+#### Tips {-} 
+1. First think what you what steps you would need to take in order to get the group proportions. Write them down on a piece of paper if you like. Once you have identified the steps, then start coding.
+2. Conduct sanity checks. Every time you have written a line of code, check the results to see if the code did indeed give the result that you expected to get.
+3. Google is your friend. Do not be afraid to search for specific solutions and suggestions, chances are that there have been other people who have faces similar problems and posted their questions on [stackoverflow](https://stackoverflow.com/).
+
+Further to calculating the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population, we also want to make a choropleth map at district level of the UK population that is older than 60 as a proportion of the total population. For this analysis we have available one data set with the administrative boundaries of the UK 2020 Local Authority Districts administrative geography and we have a `csv` file that holds population estimates for the UK in 2019. Use everything you have learned over the past weeks to produces this map. Some tips:
+
+#### Tips {-}
+1. Inspect both the shapefile and the `csv` file to get an idea of how your data look like. Use any tool you like to do this inspection (ArcGIS, R, QGIS, Microsoft Excel, etc.).
+2. The `csv` file does contain a mix of administrative geographies, and you will need to do some data cleaning by filtering out *Country*, *County*, *Metropolitan County*, and *Region* before you link the data to the shapefile.
+3. You are in charge of deciding what software you want to use to visualise the data (ArcGIS, R, QGIS, etc.).
+4. You now have to make your own decisions on how to go about this problem. Although this practical has so far covered some of the functions and strategies you might need, the data cleaning and data preparation process is not the same.
+
+#### File download {-}
+| File                                        | Type         | Link |
+| :------                                     | :------      | :------ |
+| Local Authorithy District boundaries 2020   | `shp`        | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/LADs_uk_2020.zip) |
+| Mid-Year Population Estimates 2019          | `csv`        | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/mye_pop_2019.zip) |
 
 ## Attributions {#attributions_w04}
 This week's content and practical uses content and inspiration from:

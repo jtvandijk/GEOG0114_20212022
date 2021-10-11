@@ -1,3 +1,4 @@
+fig:04-figure-hadley-wickham
 fig:09-iuc-download
 fig:09-iuc-in-excel
 spatial-operations
@@ -29,6 +30,8 @@ shared-boundary-neighbours
 theft-in-camden
 global-morans-i
 local-morans-i
+tidy-data
+assignment_w04
 attributions_w04
 point-pattern-analysis
 this_week_w07
