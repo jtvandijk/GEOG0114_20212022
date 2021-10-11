@@ -630,7 +630,8 @@ df_clean
 
 Finally. We now have a **tidy data set** that we can work with!
 
-### Assignment {#assignment_w04}
+## Assignment {#assignment_w04}
+#### Part A {-}
 Since we went through all the trouble of cleaning and creating this file, let us try and use the cleaned data set to create a table that, for each MSOA, contains the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population. It could look something like this:
 
 | msoa11cd          | white_british          | white_irish       | etc.        |
@@ -643,6 +644,7 @@ Since we went through all the trouble of cleaning and creating this file, let us
 2. Conduct sanity checks. Every time you have written a line of code, check the results to see if the code did indeed give the result that you expected to get.
 3. Google is your friend. Do not be afraid to search for specific solutions and suggestions, chances are that there have been other people who have faces similar problems and posted their questions on [stackoverflow](https://stackoverflow.com/).
 
+#### Part B {-}
 Further to calculating the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population, we also want to make a choropleth map at district level of the UK population that is older than 60 as a proportion of the total population. For this analysis we have available one data set with the administrative boundaries of the UK 2020 Local Authority Districts administrative geography and we have a `csv` file that holds population estimates for the UK in 2019. Use everything you have learned over the past weeks to produces this map. Some tips:
 
 #### Tips {-}

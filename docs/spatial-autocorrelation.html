@@ -188,11 +188,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="2.9" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#theft-in-camden"><i class="fa fa-check"></i><b>2.9</b> Theft in Camden</a></li>
 <li class="chapter" data-level="2.10" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#global-morans-i"><i class="fa fa-check"></i><b>2.10</b> Global Moran’s I</a></li>
 <li class="chapter" data-level="2.11" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#local-morans-i"><i class="fa fa-check"></i><b>2.11</b> Local Moran’s I</a></li>
-<li class="chapter" data-level="2.12" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#tidy-data"><i class="fa fa-check"></i><b>2.12</b> Tidy data</a>
-<ul>
-<li class="chapter" data-level="2.12.1" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#assignment_w04"><i class="fa fa-check"></i><b>2.12.1</b> Assignment</a></li>
-</ul></li>
-<li class="chapter" data-level="2.13" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#attributions_w04"><i class="fa fa-check"></i><b>2.13</b> Attributions</a></li>
+<li class="chapter" data-level="2.12" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#tidy-data"><i class="fa fa-check"></i><b>2.12</b> Tidy data</a></li>
+<li class="chapter" data-level="2.13" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#assignment_w04"><i class="fa fa-check"></i><b>2.13</b> Assignment</a></li>
+<li class="chapter" data-level="2.14" data-path="spatial-autocorrelation.html"><a href="spatial-autocorrelation.html#attributions_w04"><i class="fa fa-check"></i><b>2.14</b> Attributions</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="point-pattern-analysis.html"><a href="point-pattern-analysis.html"><i class="fa fa-check"></i><b>3</b> Point pattern analysis</a>
 <ul>
@@ -1052,8 +1050,11 @@ You can also try using <code>View(df)</code> or use any other form of spreadshee
 ## #   black_other &lt;dbl&gt;, other_arab &lt;dbl&gt;, other_other &lt;dbl&gt;</code></pre>
 <p>Finally. We now have a <strong>tidy data set</strong> that we can work with!</p>
 </div>
-<div id="assignment_w04" class="section level3" number="2.12.1">
-<h3><span class="header-section-number">2.12.1</span> Assignment</h3>
+</div>
+<div id="assignment_w04" class="section level2" number="2.13">
+<h2><span class="header-section-number">2.13</span> Assignment</h2>
+<div id="part-a" class="section level4 unnumbered">
+<h4>Part A</h4>
 <p>Since we went through all the trouble of cleaning and creating this file, let us try and use the cleaned data set to create a table that, for each MSOA, contains the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population. It could look something like this:</p>
 <table>
 <thead>
@@ -1079,6 +1080,7 @@ You can also try using <code>View(df)</code> or use any other form of spreadshee
 </tr>
 </tbody>
 </table>
+</div>
 <div id="tips" class="section level4 unnumbered">
 <h4>Tips</h4>
 <ol style="list-style-type: decimal">
@@ -1086,6 +1088,9 @@ You can also try using <code>View(df)</code> or use any other form of spreadshee
 <li>Conduct sanity checks. Every time you have written a line of code, check the results to see if the code did indeed give the result that you expected to get.</li>
 <li>Google is your friend. Do not be afraid to search for specific solutions and suggestions, chances are that there have been other people who have faces similar problems and posted their questions on <a href="https://stackoverflow.com/">stackoverflow</a>.</li>
 </ol>
+</div>
+<div id="part-b" class="section level4 unnumbered">
+<h4>Part B</h4>
 <p>Further to calculating the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population, we also want to make a choropleth map at district level of the UK population that is older than 60 as a proportion of the total population. For this analysis we have available one data set with the administrative boundaries of the UK 2020 Local Authority Districts administrative geography and we have a <code>csv</code> file that holds population estimates for the UK in 2019. Use everything you have learned over the past weeks to produces this map. Some tips:</p>
 </div>
 <div id="tips-1" class="section level4 unnumbered">
@@ -1122,9 +1127,8 @@ You can also try using <code>View(df)</code> or use any other form of spreadshee
 </table>
 </div>
 </div>
-</div>
-<div id="attributions_w04" class="section level2" number="2.13">
-<h2><span class="header-section-number">2.13</span> Attributions</h2>
+<div id="attributions_w04" class="section level2" number="2.14">
+<h2><span class="header-section-number">2.14</span> Attributions</h2>
 <p>This week’s content and practical uses content and inspiration from:</p>
 <ul>
 <li>Long, Alfie. 2020. Spatial autocorrelation. <a href="https://github.com/jtvandijk/GEOG0114_20202021/blob/master/04-week04.Rmd" class="uri">https://github.com/jtvandijk/GEOG0114_20202021/blob/master/04-week04.Rmd</a></li>
