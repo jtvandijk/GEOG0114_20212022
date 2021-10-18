@@ -3,6 +3,7 @@ fig:09-iuc-download
 fig:09-iuc-in-excel
 spatial-operations
 this_week_w03
+lecture_w03
 reading_w03
 case_study_w03
 getting_started_w03

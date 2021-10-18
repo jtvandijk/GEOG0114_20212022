@@ -3,6 +3,13 @@
 ## This week {#this_week_w03}
 Understanding spatial properties, relationships and how they are used within spatial operations are the building blocks to spatial data processing and analysis. This tutorial takes you through a simple approach to measuring greenspace access for schools in London, using geometric operations as the main methods for processing and analysing your data. You will construct a buffer data set around our greenspace and determine whether nearby schools intersect with this buffer. We will first visualise our data as points to see if we can identify areas of high versus low access - and then aggregate the data to the ward level for potential further use within analysis with statistical data, such as census information.
 
+## Lecture recording {#lecture_w03}
+```{r 03-lecture, warnings=FALSE, message=FALSE, echo=FALSE}
+library(vembedr)
+embed_msstream('6937ef38-bea9-402a-9027-fab842e62f4b') %>% use_align('left')
+```
+[[Lecture slides]](https://github.com/jtvandijk/GEOG0114/tree/master/data/slides/w03_psa.pdf) [[Watch on MS stream]](https://web.microsoftstream.com/video/6937ef38-bea9-402a-9027-fab842e62f4b)
+
 ## Reading list {#reading_w03}
 - Gimond, M. 2021. Intro to GIS and spatial analysis. **Chapter 8**: Spatial operations and vector overlays. [[Link]](https://mgimond.github.io/Spatial/spatial-operations-and-vector-overlays.html)
 - Longley, P. *et al.* 2015. Geographic Information Science & systems, **Chapter 13**: Spatial Analysis. [[Link]](https://rl.talis.com/3/ucl/items/fd38ec78-2bea-4165-aab3-0e9d9093db8e.html?lang=en-gb&login=1)
