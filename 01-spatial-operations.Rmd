@@ -157,9 +157,9 @@ tm_shape(london_outline) +
 ### Subsetting
 Now we have our London outline, we can go ahead and clip our schools data set by our London outline. Whilst there is a clip function within the `sf` library, what we will do here is use a techinque known as spatial subsetting, which is more similar to *selecting by location*: we will subset our london schools data set by filtering out those that are not within the London Outline. This approach in R is much quicker than using the clip function - although deciding which approach to use is not only a question of speed but also how each function will affect the filtered data. When using a clip function, the function acts exactly like a cookie-cutter and will trim off any data that overlaps with the boundaries used. Conversely, when using a subsetting approach, if a data point or polygon overlaps on the boundary, it will still be included (depending on the *topological relationship* used) but in its entirety (i.e. no trimming!). 
 
-As we're using point data, it is generally easier to use a **subset approach**. There are multiple ways to conduct spatial subsetting within R: 
+As we're using point data, it is generally easier to use a **subset approach**. There are multiple ways and notations to conduct spatial subsetting within R: 
 
-First, we can either use `[]` just like you would use for selecting and slicing a normal (table-based) dataframe from R's base package - or we can use the `filter()` function from `dplyr` within the `tidyverse`. Second, `sf` has its own library of subsetting through geometric operations, including: intersection, difference, symmetrical difference and snap.
+First, we can either use the `[]` notation just like you would use for selecting and slicing a normal (table-based) dataframe from R's base package. Second, `sf` has its own named functions for geometric operations, including: intersection, difference, symmetrical difference and snap. What actually happens is that when you use the `[]` notation on the background one of those `sf` named functions get called. More details on manipulating simple features can be found in this [vignette](https://r-spatial.github.io/sf/articles/sf4.html).
 
 To keep things simple, we will use the base subsetting approach - which also works similarly when programming in Python, for instance.
 

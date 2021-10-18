@@ -216,7 +216,7 @@ There: a slightly more nuanced picture
 ## Global Moran's I
 With a [Global Moran's I](https://en.wikipedia.org/wiki/Moran%27s_I) we can test how "random" the spatial distribution of these values is. Global Moran's I is a metric between -1 and 1. -1 is a completely even spatial distribution of values, 0 is a "random" distribution, and 1 is a "non-random" distribution of clearly defined clusters.
 
-To calculate the Global Moran's I you need an adjacency matrix that contains the information of whether or not an OA is next to another. For an even more nuanced view you can include distance, or a distance weighting in the matrix rather than just the TRUE or FALSE, to take into account the strength of the neighbourhoodness. Because of the way Moran's I functions in R it is necessary to use the `sp` and `spdep` libraries. So load them in.
+To calculate the Global Moran's I you need an adjacency matrix that contains the information of whether or not an OA is next to another. For an even more nuanced view you can include distance, or a distance weighting in the matrix rather than just the `TRUE` or `FALSE`, to take into account the strength of the neighbourhoodness. Because of the way Moran's I functions in R it is necessary to use the `sp` and `spdep` libraries. So load them in.
 
 ``` {r 04-j-load-sp-spdep, warning=FALSE, cache=FALSE}
 # libraries
