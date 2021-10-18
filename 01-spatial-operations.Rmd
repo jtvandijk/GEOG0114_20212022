@@ -106,7 +106,7 @@ When you loaded your data sets in the above step, you may have notice that in th
 To reproject our data set, we can use a function within the `sf` library, known as `st_transform()`. It is very simple to use - you only need to provide the function with the data set and the code for the new CRS you wish to use with the data. For now, we will simply store the result of this transformation as a new variable - but you could in the future, rewrite this code to use pipes to pipe this transformation when loading the data set.
 
 ```{r reproject, cache=FALSE}
-# reproject london schools form WGS84 to BNG 
+# reproject london schools from Web Mercator to BNG 
 london_schools_prj <- st_transform(london_schools, 27700)
 ```
 
