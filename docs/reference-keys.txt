@@ -7,7 +7,7 @@ lecture_w03
 reading_w03
 case_study_w03
 getting_started_w03
-libraries
+working-directory-and-libraries
 loading_data_w03
 data-processing
 reprojecting

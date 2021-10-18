@@ -48,28 +48,33 @@ Now we have our script created, we can create a new data folder within the same 
 | :------                                              | :------        | :------ |
 | London school and greenspace data                    |`shp`     | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/school_analysis.zip) |
 
-## Libraries
-The **first two tasks** you will do **everytime** you create a new script is to first, point your computer to your working directory (so it knows where all your data is) and second, (pre-emptively) load many of the libraries you think you'll be using in your analysis. Luckily, we can now use the latter to also do the former - saving us a little bit of time in our set-up and a lot of time in our script-writing later on - by using the `here` library. Install this library if you have not already done so!
+## Working directory and libraries
+The **first two tasks** you will do **everytime** you create a new script is to first, point your computer to your working directory (so it knows where all your data is) and second, (pre-emptively) load many of the libraries you think you'll be using in your analysis. At the moment, we know that we'll need to load some spatial data - therefore we need to load a library capable of handling our data sets. For this module, and preferably within your R programming moving forward, we will focus on using the `sf` or *Simple Features* library that allows us to load, manipulate, process and export spatial data. 
 
-```{r here-here-here, echo=TRUE}
-# libraries
-library(here)
+Your working directory is the folder on the computer where you wish to store the data files you are working with. If you are using RStudio, on the lower right of the screen is a window with a **Files tab**. If you click on this tab you can then navigate to the folder you wish to use as your working directory. You can then click on the **More** button and then **Set as Working Directory**. This means in our case: select the folder in which you just saved your R script! You should then see some code similar to the below appear in the command line. It is also possible to type the code in manually.
+
+```{r 01-set-wd, warnings=FALSE, message=FALSE, eval=FALSE}
+# set the working directory path to the folder you wish to use
+setwd('/Users/UCL/GEOG0114/W01') 
+# note the single / (\\ will also work)
 ```
 
-But this library alone will not be enough for our analysis today! At the moment, we know that we'll need to load some spatial data - therefore we need to load a library capable of handling our data sets. For this module, and preferably within your R programming moving forward, we will focus on using the `sf` or *Simple Features* library that allows us to load, manipulate, process and export spatial data. 
+<div class="note">
+**Note**<br/>
+Please ensure that **folder names** and **file names** do not contain spaces or special characters such as `*` `.` `"` `/` `\` `[` `]` `:` `;` `|` `=` `,` `<` `?` `>` `&` `$` `#` `!` `'` `{` `}` `(` `)`. Different operating systems and programming languages deal differently with spaces and special characters and as such including these in your folder names and file names can cause many problems and unexpected errors. As an alternative to using white space you can use an underscore `_` if you like.
+</div>
+
+In addition to the `sf` library, we want to add in the `tidyverse` library that will allow us to use the pipe function (`%>%`), among other things, within our work and enable more efficient programming. We are likely going to need some additional libraries to help further manipulate or visualise our data sets as we move forward with our processing - we'll add these in now, but explain them in a little more detail as we get to use them in our code. These libraries include: `units` and `tmap`.
 
 <div class="note">
 **Note**<br/>
 Prior to the `sf` library, which was introduced to R-Studio in 2017, the `sp` library was the main spatial library used in R-Studio. As a result, you may see older code or scripts using the `sp` to handle spatial data. `sf` has replaced `sp` as the default spatial library as it works better with the `tidyverse` way of doing things. Ultimately, you can convert between the two library formats (and some other libraries we will use later on in the term still only work with `sp`) - but it is best practice to try to use the `sf` library in your code moving forward.
 </div>
 
-In addition to the `sf` library, we want to add in the `tidyverse` library that will allow us to use the pipe function (`%>%`), amongst other things, within our work and enable more efficient programming. We are likely going to need some additional libraries to help further manipulate or visualise our data sets as we move forward with our processing - we'll add these in now, but explain them in a little more detail as we get to use them in our code. These libraries include: `units` and `tmap`.
-
 As a result, the top of our script should look something like:
 
 ```{r load-them-in, echo=TRUE, comment=FALSE, warning=FALSE, eval=FALSE}
 # libraries
-library(here)
 library(tidyverse)
 library(sf)
 library(tmap)
@@ -78,7 +83,6 @@ library(units)
 
 ```{r load-them-in-for-realz, echo=FALSE, comment=FALSE, warning=FALSE}
 # libraries
-suppressMessages(library(here))
 suppressMessages(library(tidyverse))
 suppressMessages(library(sf))
 suppressMessages(library(tmap))
@@ -92,14 +96,14 @@ Let's go ahead and load our three variables - we will use the `sf` library `st_r
 
 ```{r load-those-shapes, echo=TRUE, cache=FALSE}
 # load london schools
-london_schools <- st_read(here::here('data/schools', 'school_data_london_2016.shp'))
+london_schools <- st_read('data/schools/school_data_london_2016.shp')
 
 # load london wards
-london_wards <- st_read(here::here('data/administrative_boundaries', 'london_wards.shp'))
+london_wards <- st_read('data/administrative_boundaries/london_wards.shp')
 
 # load london greenspace
-TL_greenspace <- st_read(here::here('data/greenspace', 'TL_GreenspaceSite.shp'))
-TQ_greenspace <- st_read(here::here('data/greenspace', 'TQ_GreenspaceSite.shp'))
+TL_greenspace <- st_read('data/greenspace/TL_GreenspaceSite.shp')
+TQ_greenspace <- st_read('data/greenspace/TQ_GreenspaceSite.shp')
 ```
 
 To see what each variable looks like, you can type in `plot(name_of_variable)` into the R console. This is a quick command to understand both the spatial coverage and attributes of your data - as it will display the data by each of its attribute fields as a plot.
