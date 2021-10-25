@@ -5,6 +5,13 @@ This week, we focus on the first of two key properties of spatial data: spatial 
 
 A critical first step of spatial autocorrelation is to define the criteria under which a spatial unit (e.g. an areal or point unit) can be understood as a "neighbour" to another unit. As highlighted in previous weeks, spatial properties can often take on several meanings, and as a result, have an impact on the validity and accuracy of spatial analysis. This multiplicity also can be applied to the concept of spatial neighbours which can be defined through adjacency, contiguity or distance-based measures. As the specification of these criteria can impact the results, the definition followed therefore need to be grounded in particular theory that aims to represent the process and variable investigated. 
 
+## Lecture recording {#lecture_w04}
+```{r 04-lecture, warnings=FALSE, message=FALSE, echo=FALSE}
+library(vembedr)
+embed_msstream('01dc4984-23a2-43bf-8bf0-386ba2bc3ce3') %>% use_align('left')
+```
+[[Lecture slides]](https://github.com/jtvandijk/GEOG0114/tree/master/data/slides/w04_psa.pdf) [[Watch on MS stream]](https://web.microsoftstream.com/video/01dc4984-23a2-43bf-8bf0-386ba2bc3ce3)
+
 ## Reading list {#reading_w04}
 - Gimond, M. 2021. Intro to GIS and spatial analysis. **Chapter 13**: Spatial autocorrelation. [[Link]](https://mgimond.github.io/Spatial/spatial-autocorrelation.html)
 - Longley, P. *et al.* 2015. Geographic Information Science & systems, **Chapter 2**: The Nature of Geographic Data. [[Link]](https://rl.talis.com/3/ucl/items/ea2386fb-19dc-460a-acba-bda3737546c2.html?lang=en-gb&login=1)
@@ -128,6 +135,11 @@ tm_shape(camden_oas) +
 The next way of calculating neighbours takes into account the actual shape and location of the polygons in our shapefile. This has only recently been added to the world of `sf()`, previously we would have reverted to using the `sp()` package and others that depend on it such as `spdep()`.
 
 We can create two functions that check whether any polygons share boundaries or overlap one another, and then also check by how much. These new functions are based on the `st_relate()` function. The different cases of these are known as queen, and rook. These describe the relations in a similar way to the possible chess board movements of these pieces. 
+
+<div class="note">
+**Note**<br/>
+Do have a look at the short lectures by Luc Anselin on [Moran's I](https://www.youtube.com/watch?v=qWQ1Pa5cbtw), the [interpretation of Moran's I](https://www.youtube.com/watch?v=_J_bmWmOF3I), and [neighbours and spatial weights](https://www.youtube.com/watch?v=xMXFvRO4cEM) for some additional explanation on measuring spatial autocorrelation with Moran's I.
+</div>
 
 ``` {r 04-e-shared-boundary-neighbour-function-creation, cache=FALSE}
 # for rook case
@@ -632,7 +644,7 @@ Finally. We now have a **tidy data set** that we can work with!
 
 ## Assignment {#assignment_w04}
 #### Part A {-}
-Since we went through all the trouble of cleaning and creating this file, let us try and use the cleaned data set to create a table that, for each MSOA, contains the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population. It could look something like this:
+Since we went through all the trouble of cleaning and creating this file, now try and use the cleaned data set to create a table that, for each MSOA, contains the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population. It could look something like this:
 
 | msoa11cd          | white_british          | white_irish       | etc.        |
 | :------           | :------:               | :------:          | :------:    |
@@ -645,7 +657,7 @@ Since we went through all the trouble of cleaning and creating this file, let us
 3. Google is your friend. Do not be afraid to search for specific solutions and suggestions, chances are that there have been other people who have faces similar problems and posted their questions on [stackoverflow](https://stackoverflow.com/).
 
 #### Part B {-}
-Further to calculating the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population, we also want to make a choropleth map at district level of the UK population that is older than 60 as a proportion of the total population. For this analysis we have available one data set with the administrative boundaries of the UK 2020 Local Authority Districts administrative geography and we have a `csv` file that holds population estimates for the UK in 2019. Use everything you have learned over the past weeks to produces this map. Some tips:
+Further to calculating the proportions of the population belonging to each of the ethnic groups in the UK 2011 Census of Population, we also want to make a choropleth map at district level of the UK population that is older than 60 (as a proportion of the total population within each district). For this analysis we have available one data set with the administrative boundaries of the UK 2020 Local Authority Districts administrative geography and we have a `csv` file that holds population estimates for the UK in 2019. Use everything you have learned over the past weeks to produces this map. Some tips:
 
 #### Tips {-}
 1. Inspect both the shapefile and the `csv` file to get an idea of how your data look like. Use any tool you like to do this inspection (ArcGIS, R, QGIS, Microsoft Excel, etc.).
@@ -663,4 +675,4 @@ Further to calculating the proportions of the population belonging to each of th
 This week's content and practical uses content and inspiration from:
 
 - Long, Alfie. 2020. Spatial autocorrelation. https://github.com/jtvandijk/GEOG0114_20202021/blob/master/04-week04.Rmd
-- Gimond, Manual. 2021. Spatial autocorrelation in R. https://mgimond.github.io/Spatial/spatial-autocorrelation-in-r.html
+- Gimond, Manuel. 2021. Spatial autocorrelation in R. https://mgimond.github.io/Spatial/spatial-autocorrelation-in-r.html

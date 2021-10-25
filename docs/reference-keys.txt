@@ -21,6 +21,7 @@ greenspace-in-london
 attributions_w03
 spatial-autocorrelation
 this_week_w04
+lecture_w04
 reading_w04
 case_study_w04
 neighbours
