@@ -3,6 +3,9 @@
 ## This week {#this_week_w07}
 In our previous practicals, we have aggregated our point data into areal units, primarily using administrative geographies, to enable its easy comparison with other data sets provided at the same spatial scale, such as the census data used in the previous week, as well as to conduct spatial autocorrelation tests. However, when locations are precisely known, spatial point data can be used with a variety of spatial analytic techniques that go beyond the methods typically applied to areal data. The set of methods unique to point data are often referred to as point pattern analysis and geostatistics. Within point pattern analysis, we look to detect patterns across a set of locations, including measuring density, dispersion and homogeneity in our point structures. We will look at both distance-based methods, by employing Ripley's K function, as well as density-based methods, particularly Kernel Density Estimation.
 
+## Lecture recording {#lecture_w06}
+Due to some technical error this week's lecture Microsoft Team's did not save the recording to Microsoft Stream, and as such is not available. You can still download the lecture slides: [[Lecture slides]](https://github.com/jtvandijk/GEOG0114/tree/master/data/slides/w06_psa.pdf)
+
 ## Reading list {#reading_w07}
 - Cheshire, J. and Longley, P. A. 2011. Identifying spatial concentrations of surnames. *International Journal of Geographical Information Science* 26(2), pp.309-325. [[Link]](https://doi.org/10.1080/13658816.2011.591291)
 - Longley, P. *et al.* 2015. Geographic Information Science & systems, **Chapter 12**: Geovisualisation. [[Link]](https://rl.talis.com/3/ucl/items/30C76C0B-1DAD-C865-DEA4-36B33F1EDFD1.html?lang=en-gb&login=1)
@@ -254,7 +257,7 @@ Now you have seen the GBNames website and you know how to execute a Kernel Densi
 For privacy reasons the surname data you will be using are not actual data but are made to closely represent the actual data!
 </div>
 
-This will involve you having to make some decisions: Which **kernel** to use? Which **bandwidth** to use? Why? Do you differ the bandwidth *between* different surname searches or do you keep them the same? 
+This will involve you having to make some decisions: Which **kernel** to use? Which **bandwidth** to use? Why? Do you differ the bandwidth *between* different surname searches or do you keep them the same? How would you go about vectorising these raster data sets and extracting the contour line(s) of the KDEs that you have drawn?
 
 <div class ="note">
 **Note**<br/>

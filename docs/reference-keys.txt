@@ -37,6 +37,7 @@ assignment_w04
 attributions_w04
 point-pattern-analysis
 this_week_w07
+lecture_w06
 reading_w07
 case_study_w07
 getting_started_w07
