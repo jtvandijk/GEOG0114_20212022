@@ -244,10 +244,10 @@ embed_youtube('ay2uwtRO3QE',frameborder=1) %>% use_align('left')
 ### Example: GBNames
 Another example of point pattern analysis in practice, is Consumer Data Research Centre [GBNames](https://apps.cdrc.ac.uk/gbnames/) website. By using the residential locations of the bearers of surnames for different time periods, GBNames  explores the generational and inter-generational residential movements of family groups across Great Britain. One way to analyse and compare individual surname distributions over time without being hindered by changing administrative areas is, in fact, by point pattern analysis. This is done by assign every individual found in the historic census data to the centroid of the parish with which they are associated. Similarly, all individuals found in the contemporary [Consumer Registers](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssa.12476) are geocoded directly through the coordinates associated with each postcode. 
 
-Try to execute some surname searches and see if you can find any interesting patterns or differences between surnames. Also, try to understand what the additional Consumer Statistics mean - these are already a small bridge to the material of W09 which will involve a closer look at geodemographics!
+Try to execute some surname searches and see if you can find any interesting patterns or differences between surnames. Also, try to understand what the additional Consumer Statistics mean and how they can be interpreted - these are already a small bridge to the material of W09 which will involve a closer look at geodemographics.
 
 ## Assignment {#assignment_w07}
-Now you have seen the GBNames website and you know how to execute a Kernel Density Estimation, it is time you try it yourself. Below are three data sets with the locations of the bearers of three different surnames (Longley, Wilkins, Van Dijk). Each data set contains a surname, a x-coordinate and a y-coordinate (both already projected in [EPSG 27700](https://epsg.io/27700)). Your task is to analyse these three surname distributions using Kernel Density Estimation. 
+Now you have seen the GBNames website and you know how to execute a Kernel Density Estimation, it is time you try it yourself. Below are three data sets with the locations of the bearers of four different surnames (Longley, Wilkins, Van Dijk, Smith). Each data set contains a surname, a x-coordinate and a y-coordinate (both already projected in [EPSG 27700](https://epsg.io/27700)). Your task is to analyse these four surname distributions using Kernel Density Estimation. 
 
 <div class ="note">
 **Note**<br/>
@@ -264,7 +264,7 @@ Whilst we have been using `spatstat` for creating our KDE, there are also other 
 #### File download {-}
 | File                                                 | Type           | Link |
 | :------                                              | :------        | :------ |
-| Surname bearer files (Longley, Wilkins, Van Dijk)    | `csv`          | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/surname_bearers.zip) |
+| Surname bearer files (Longley, Wilkins, Van Dijk, Smith)    | `csv`          | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/surname_bearers.zip) |
 | Simplified boundaries of Great Britain               | `shp`          | [Download](https://github.com/jtvandijk/GEOG0114/tree/master/data/zip/gb_outline.zip) |
 
 ## Attributions {#attributions_w07}

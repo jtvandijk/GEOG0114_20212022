@@ -311,7 +311,7 @@ To properly utilise these local statistics and make an intuitively useful map, w
 camden_oas_sp$scale_n_thefts <- scale(camden_oas_sp$n_thefts)
 ```
 
-To compare this rescaled value against its neighbours, we subseuqnetly need to create a new column that carries information about the neighbours. This is called a spatial lag function. The "lag" just refers to the fact you are comparing one observation against another, this can also be used between timed observations. In this case, the "lag" we are looking at is between neighbours.
+To compare this rescaled value against its neighbours, we subsequently need to create a new column that carries information about the neighbours. This is called a spatial lag function. The "lag" just refers to the fact you are comparing one observation against another, this can also be used between timed observations. In this case, the "lag" we are looking at is between neighbours.
 
 ``` {r 04-r-spatial-lag, cache=FALSE}
 # create a spatial lag variable 
