@@ -8,7 +8,7 @@ This week we will look at data rich environments and how we can use socio-demogr
 We will look at geodemographics by focusing on a geodemographic classification known as the [Internet User Classification](https://data.cdrc.ac.uk/dataset/internet-user-classification).
 
 ## Lecture recording {#lecture_w09}
-```{r 04-lecture, warnings=FALSE, message=FALSE, echo=FALSE}
+```{r 09-lecture, warnings=FALSE, message=FALSE, echo=FALSE}
 library(vembedr)
 embed_msstream('5859a620-03fe-4c1b-b7e3-252f839f2d4a') %>% use_align('left')
 ```
