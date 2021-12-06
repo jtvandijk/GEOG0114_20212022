@@ -264,7 +264,7 @@ tm_shape(gs_buffer_400m_single) +
 ```
 
 ## Greenspace in London
-Great, we are now ready to bring our two data sets together reaady for anlaysis - and to do so, we'll use subsetting as well as the `st_intersects()` function, although with this one, we'll use it in two different ways!
+Great, we are now ready to bring our two data sets together ready for analysis - and to do so, we'll use subsetting as well as the `st_intersects()` function, although with this one, we'll use it in two different ways!
 
 Our first task is to identify those schools that have access to greenspace - and extract them to create a new variable for use within our final point-in-polygon count (i.e. how many schools within each ward has access to greenspace). As we know, we can subset our london_schools data set by our greenspace buffer quite easily using the subset approach:
 
