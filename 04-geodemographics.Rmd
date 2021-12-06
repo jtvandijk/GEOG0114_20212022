@@ -7,6 +7,13 @@ This week we will look at data rich environments and how we can use socio-demogr
 
 We will look at geodemographics by focusing on a geodemographic classification known as the [Internet User Classification](https://data.cdrc.ac.uk/dataset/internet-user-classification).
 
+## Lecture recording {#lecture_w04}
+```{r 04-lecture, warnings=FALSE, message=FALSE, echo=FALSE}
+library(vembedr)
+embed_msstream('5859a620-03fe-4c1b-b7e3-252f839f2d4a') %>% use_align('left')
+```
+[[Lecture slides]](https://github.com/jtvandijk/GEOG0114/tree/master/data/slides/w09_psa.pdf) [[Watch on MS stream]](https://web.microsoftstream.com/video/5859a620-03fe-4c1b-b7e3-252f839f2d4a)
+
 ## Reading list {#reading_w09}
 - Goodman, A. *et al.* 2011. Characterising socio-economic inequalities in exposure to air pollution: A comparison of socio-economic markers and scales of measurement. *Health & Place* 17(3), pp.767-774. [[Link]](https://doi.org/10.1016/j.healthplace.2011.02.002)
 - Longley, P. A. 2012. Geodemographics and the practices of geographic information science. *International Journal of Geographical Information Science* 26(12), pp.2227-2237. [[Link]](https://doi.org/10.1080/13658816.2012.719623)
