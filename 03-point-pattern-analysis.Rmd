@@ -4,7 +4,7 @@
 In our previous practicals, we have aggregated our point data into areal units, primarily using administrative geographies, to enable its easy comparison with other data sets provided at the same spatial scale, such as the census data used in the previous week, as well as to conduct spatial autocorrelation tests. However, when locations are precisely known, spatial point data can be used with a variety of spatial analytic techniques that go beyond the methods typically applied to areal data. The set of methods unique to point data are often referred to as point pattern analysis and geostatistics. Within point pattern analysis, we look to detect patterns across a set of locations, including measuring density, dispersion and homogeneity in our point structures. We will look at both distance-based methods, by employing Ripley's K function, as well as density-based methods, particularly Kernel Density Estimation.
 
 ## Lecture recording {#lecture_w07}
-```{r 04-lecture, warnings=FALSE, message=FALSE, echo=FALSE}
+```{r 07-lecture, warnings=FALSE, message=FALSE, echo=FALSE}
 library(vembedr)
 embed_msstream('a4c39843-fb84-416a-b18d-ef151cb81595') %>% use_align('left')
 ```
