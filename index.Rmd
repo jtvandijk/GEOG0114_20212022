@@ -6,7 +6,7 @@ site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
 link-citations: yes
-github-repo: "jtvandijk/GEOG0114"
+github-repo: "jtvandijk/GEOG0114_20212022"
 description: "GEOG0114: Principles of Spatial Analysis handbook."
 url: 'https\://jtvandijk.github.io/GEOG0114_20212022/'
 ---
