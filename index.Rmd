@@ -8,7 +8,7 @@ documentclass: book
 link-citations: yes
 github-repo: "jtvandijk/GEOG0114"
 description: "GEOG0114: Principles of Spatial Analysis handbook."
-url: 'https\://jtvandijk.github.io/GEOG0114/'
+url: 'https\://jtvandijk.github.io/GEOG0114_20212022/'
 ---
 
 # About {-}
